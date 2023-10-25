@@ -123,7 +123,7 @@ In a first step variant names are generated from this file in the format `(Gene)
 
 Before mapping the script also checks if mapped variants are already present.
 
-The additional file needed is the [ClinVar variation release](https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/):
+The additional file needed is the [ClinVar variation release](https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/):
 `ClinVarVariationRelease_00-latest.xml`
 This will be downloaded and unpacked if not present.
 
