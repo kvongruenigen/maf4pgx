@@ -128,7 +128,7 @@ The additional file needed is the [ClinVar variation release](https://ftp.ncbi.n
 This will be downloaded and unpacked if not present.
 
 With the needed prerequisit the XML file is parsed in a 'per element' fashion with `iterparse()`, the starting tag for the element is `VariationArchive` and the resulting element will be searched for the desired entries, according to the [BeaconV2 schema](https://github.com/ga4gh-beacon/beacon-v2/blob/main/models/src/beacon-v2-default-model/genomicVariations/defaultSchema.yaml). In the end the mapped variants are stored in the output file `data/mapped_variants.json`.
-An example for the ClinVar XML file can be found [here](https://github.com/ncbi/clinvar/blob/master/sample_xmls/vcv_01.xml#L105).
+An example for the ClinVar XML file can be found [here](https://github.com/ncbi/clinvar/blob/master/sample_xmls/vcv_01.xml).
 
 The resulting objects have the follwing structure:
 - variant_name
