@@ -18,32 +18,36 @@ __Expected outcomes:__
 
 ## Novel data
 
-### Download
+### Data mining
 
-Modules: requests, json, re, os
+Script: gdc_download.py
 
-The workflow is able to search for mutation annotation format (MAF) files for masked somatic mutations from TCGA program in the NIC/GDC database and download all files. The download happens in chunks of 1000 files, so the server does not time out. With this a file is created to keep track of the downloaded files. This file is read within a new run of the download code and will exclude files that are already present.
+Modules: requests, json, re, os, tarfile, shutil, gzip
 
-### Unpacking zip files
-
-Modules: 
-
-Afterwards, all the downloads are unpacked until the MAF files and then stored in the data directory in the maf_files folder and empty directories are deleted for cleanliness.
+The script is able to search for mutation annotation format (MAF) files for masked somatic mutations from TCGA program in the NCI-GDC database and download all files matching the filters. The filters can also be changed to other programs and data types. The download happens in chunks of 1000 files, so the server does not time out. With this a file `existing_file_ids.txt` is created to keep track of the downloaded files. This file is read within a new run of the download code and will exclude files that are already present.
+Afterwards, all the downloads are unpacked until the MAF files and then stored in the `data/maf/` directory and empty directories are deleted for cleanliness.
 
 ## MAF files available
 
 ### Data extraction
 
+Script: extractor.py
+
 Modules: pandas, os, glob, tqdm
 
 *For future use it should be possible to load MAF files into the same directory and the workflow will extract the information from the files and store them together in a file called maf_data.csv. If there is already data available from previous imports, it will be read in and the new data will be compared to the existing, so only additional data will get loaded into the CSV.* ****(Not there yet. Necessary?)****
 
-The extraction script will load in the MAF files stored in the `data/maf_files/` directory and store the following columns in a data frame, that will be put in a list of data frames, which will be put together in the end. The relevant columns are:
+The extraction script loads in the MAF files stored in the `data/maf_files/` directory and puts all files in a list of data frames, which will be concatenated in the end. The combined data will be stored in `data/maf_data.csv`.
 
+### Conversion (only for TCGA data)
+
+Script: aliquot_to_sample.R
+
+Libraries: tidyverse, TCGAutils
+
+With the package ‘TCGAutils’ it is possible to convert barcodes to UUIDs, which is used to obtain the original sample id. This is needed since in progenetix the sample id is used instead of the aliquot id. During the conversion the variable “Tumor_Sample_Barcode” will be labeled correctly as “aliquot_barcode”, since the given barcode belongs to an aliquot of a sample, and only the first 16 characters are kept as sample barcode. (Hierarchy in GDC Data Portal: Samples > Portions > Analytes > Aliquots). The needed columns for the conversion are:
 - Tumor_Sample_UUID
     - GDC aliquot UUID for tumor sample
-- Matched_Norm_Sample_UUID
-    - GDC aliquot UUID for matched normal sample
 - case_id
     - GDC UUID for the case
 - Chromosome
@@ -63,32 +67,27 @@ The extraction script will load in the MAF files stored in the `data/maf_files/`
 - Tumor_Sample_Barcode
     - Aliquot barcode for the tumor sample
 
-During the extraction the variable “Tumor_Sample_Barcode” will be labeled correctly as “aliquot_barcode”, since the given barcode belongs to an aliquot of a sample, and only the first 16 characters are kept as sample barcode. (Hierarchy in GDC Data Portal: Samples > Portions > Analytes > Aliquots)
-
-### Conversion
-
-Modules: tidyverse, TCGAutils
-
-With the package ‘TCGAutils’ it is possible to convert barcodes to UUIDs, which is used to obtain the original sample id. This is needed since in progenetix the sample id is used instead of the aliquot id. Furthermore, the columns are renamed to match the variable names used in the bycon package variant import script. Lastly, the temporary file mapfile.tsv is created in the temp directory. The columns kept are:
+Furthermore, the columns are renamed to match the variable names used in the bycon package variant import script. Lastly, the data is stored in `data/pgx_import.tsv`. The columns kept are:
 
 - case_id
 - sample_id
-- aliquot_id
-- reference_id
 - chromosome
 - start
 - end
 - variant_classification
-- variant_type
+- snv_type
+- reference_bases
+- alternate_bases
 
-### Mapping
+### Curation
+
+Script: maf_curation_pgx.py
 
 Modules: os, pandas, bycon, pymongo, tqdm, numpy
 
-During the mapping process, the file created beforehand will be loaded and several conventions from progenetix will be applied:
+The curation script will load the file created beforehand `pgx_import.tsv` and during the mapping process several conventions from progenetix will be applied:
 
 1. The case and sample ids will get the prefix ‘pgx:TCGA.’
-2. ‘variant_type’ is renamed in ‘snv_type’
 3. ‘chromosome’ is renamed into ‘reference_name’ and the ‘chr’ prefix is discarded
 4. The sequence ontology for sequence alteration (SO:0001059) is used to label all variants as SNVs - [http://www.sequenceontology.org/browser/](http://www.sequenceontology.org/browser/)
 5. Each SNV gets the sequence ontology for its specific type:
@@ -109,9 +108,9 @@ Then the sample ids are taken from a set of unique aliquot ids and mapped to the
 
 In the end, the variants that couldn’t be mapped to a sample id will be labeled as new variants and stored in a separate file. The variants ready to be imported and the new variants will be stored as a TSV in the data directory with the following format:
 
-| biosample_id | variant_id | callset_id | individual_id | reference_name | start | end | reference_bases | alternate_bases | variant_classification | variant_state_id | specific_so | aliquot_id | reference_id | case_id | sample_id | variant_types |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| biosample_id | variant_id | callset_id | individual_id | reference_name | start | end | reference_bases | alternate_bases | variant_classification | variant_state_id | specific_so | case_id | sample_id | snv_type |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 
 With this the format for the database import is given and the data can be import into the progenetix MongoDB.
 
