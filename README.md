@@ -56,6 +56,8 @@ __Modules__: pandas, os, glob, tqdm
 
 The extraction script loads in the MAF files stored in the `data/maf_files/` directory and puts all files in a list of data frames, which will be concatenated in the end. The combined data will be stored in `data/maf_data.csv`.
 
+---
+
 <a name="conversion"></a>
 ### Conversion (only for TCGA data)
 
@@ -97,6 +99,8 @@ Furthermore, the columns are renamed to match the variable names used in the byc
 - reference_bases
 - alternate_bases
 
+---
+
 <a name="curation"></a>
 ### Curation
 
@@ -133,6 +137,7 @@ In the end, the variants that couldn’t be mapped to a sample id will be labele
 
 With this the format for the database import is given and the data can be import into the progenetix MongoDB.
 
+---
 
 <a name="clinvar"></a>
 ### ClinVar annotation mining
