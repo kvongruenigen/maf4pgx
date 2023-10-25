@@ -96,7 +96,9 @@ During the mapping process, the file created beforehand will be loaded and sever
 6. Conversion of the ‘1-start, fully-closed’ into a ‘0-start, half-open’ genomic coordinate system as recommended by the global alliance for genomics and health ([GA4GH](http://ga4gh.org)) - [https://genomestandards.org/standards/genome-coordinates/](https://genomestandards.org/standards/genome-coordinates/). This is achieved by:
 - Subtracting the value 1 of the ‘start’ variable for SNPs, MNPs, and DELs
 - Subtracting the value 1 of the ‘end’ variable for INSs
-For a more detailed explanation see below.
+Additional explanation for the genomic coordinate system:
+
+[https://www.biostars.org/p/84686/](https://www.biostars.org/p/84686/)
 
 Then the sample ids are taken from a set of unique aliquot ids and mapped to the progenetix data base, where the internal biosample id and individual id is retrieved, if the sample id is in the data base. Additionally, an internal callset id is generated and added for each unique aliquot id. The generated and the retrieved variables are then assigned to the corresponding aliquot id.
 
@@ -109,13 +111,6 @@ In the end, the variants that couldn’t be mapped to a sample id will be labele
 With this the format for the database import is given and the data can be import into the progenetix MongoDB.
 
 ---
-
-Additional explanation for the genomic coordinate system:
-
-![[https://www.biostars.org/p/84686/](https://www.biostars.org/p/84686/)](Midterm%2095bb388097634884a975825a8d120868/Screenshot_2023-06-16_at_15.20.08.png)
-
-[https://www.biostars.org/p/84686/](https://www.biostars.org/p/84686/)
-
 
 ### ClinVar
 
