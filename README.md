@@ -14,10 +14,25 @@ __Expected outcomes:__
 * Development of Beacon queries and representation for compound genomic variations
 * Analysis of compound or alternative variant events in the TCGA dataset and beyond
 
-# Workflow
 
+
+<a name="workflow"></a>
+# Workflow
+### Contents
+- [ Novel data ](#novelData)
+    - [ Data mining](#dataMining)
+- [ MAF files available ](#mafFiles)
+    - [ Data extraction ](#dataExtraction)
+    - [ Conversion ](#conversion)
+    - [ Curation ](#curation)
+    - [ Clinvar annotation mining ](#clinvar)
+ 
+
+
+<a name="novelData"></a>
 ## Novel data
 
+<a name="dataMining"></a>
 ### Data mining
 
 __Script__: gdc_download.py
@@ -27,8 +42,10 @@ __Modules__: requests, json, re, os, tarfile, shutil, gzip
 The script is able to search for mutation annotation format (MAF) files for masked somatic mutations from TCGA program in the NCI-GDC database and download all files matching the filters. The filters can also be changed to other programs and data types. The download happens in chunks of 1000 files, so the server does not time out. With this a file `existing_file_ids.txt` is created to keep track of the downloaded files. This file is read within a new run of the download code and will exclude files that are already present.
 Afterwards, all the downloads are unpacked until the MAF files and then stored in the `data/maf/` directory and empty directories are deleted for cleanliness.
 
+<a name="mafFiles"></a>
 ## MAF files available
 
+<a name="dataExtraction"></a>
 ### Data extraction
 
 __Script__: extractor.py
@@ -39,6 +56,7 @@ __Modules__: pandas, os, glob, tqdm
 
 The extraction script loads in the MAF files stored in the `data/maf_files/` directory and puts all files in a list of data frames, which will be concatenated in the end. The combined data will be stored in `data/maf_data.csv`.
 
+<a name="conversion"></a>
 ### Conversion (only for TCGA data)
 
 __Script__: aliquot_to_sample.R
@@ -79,6 +97,7 @@ Furthermore, the columns are renamed to match the variable names used in the byc
 - reference_bases
 - alternate_bases
 
+<a name="curation"></a>
 ### Curation
 
 __Script__: maf_curation_pgx.py
@@ -114,9 +133,9 @@ In the end, the variants that couldn’t be mapped to a sample id will be labele
 
 With this the format for the database import is given and the data can be import into the progenetix MongoDB.
 
----
 
-## ClinVar
+<a name="clinvar"></a>
+### ClinVar annotation mining
 
 __Script__: clinvar.py
 
