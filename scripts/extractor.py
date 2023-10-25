@@ -7,13 +7,6 @@ import pandas as pd
 import glob
 from tqdm import tqdm
 
-path = input("Enter path to project directory (default = current directory): ") # "/Users/kayvongrunigen/Projects/snpettes/final-workflow"
-if path == "":
-    path = os.getcwd()
-
-# Set working directory
-os.chdir(path)
-
 # Create a dataframe and a list for the MAF data
 data = pd.DataFrame()
 df_list = []

@@ -15,10 +15,6 @@ import pandas as pd
 import glob
 from tqdm import tqdm
 
-path = input("Enter path to project directory (default = current directory): ") # "/Users/kayvongrunigen/Projects/snpettes/final-workflow"
-if path == "":
-    path = os.getcwd()
-os.chdir(path)
 # Access the file endpoint from GDC for id retrieval
 files_endpt = "https://api.gdc.cancer.gov/files"
 

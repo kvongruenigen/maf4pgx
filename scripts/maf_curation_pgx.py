@@ -9,12 +9,6 @@ from pymongo import MongoClient
 from tqdm import tqdm
 import numpy as np
 
-# Set working directory
-path = input("Enter path to project directory (default = current directory): ") # "/Users/kayvongrunigen/Projects/snpettes/final-workflow"
-if path == "":
-    path = os.getcwd()
-os.chdir(path)
-
 # Connect to MongoDB
 client = MongoClient()
 db = client.progenetix
