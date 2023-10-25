@@ -124,9 +124,10 @@ In a first step variant names are generated from this file in the format `(Gene)
 The additional file needed is the ClinVar variation release: `ClinVarVariationRelease_00-latest.xml`
 This will be downloaded and unpacked if not present.
 
-Before mapping the script also checks if mapped variants (output file: `mapped_variants.json`) are already present.
+Before mapping the script also checks if mapped variants are already present.
 
-With the needed prerequisit the XML file is parsed in a 'per element' fashion with `iterparse()` and the resulting element will be searched for the wanted entries, according to the [BeaconV2 schema](https://github.com/ga4gh-beacon/beacon-v2/blob/main/models/src/beacon-v2-default-model/genomicVariations/defaultSchema.yaml).
+With the needed prerequisit the XML file is parsed in a 'per element' fashion with `iterparse()` and the resulting element will be searched for the wanted entries, according to the [BeaconV2 schema](https://github.com/ga4gh-beacon/beacon-v2/blob/main/models/src/beacon-v2-default-model/genomicVariations/defaultSchema.yaml). In the end the mapped variants are stored in the output file `data/mapped_variants.json`.
+
 The resulting objects have the follwing structure:
 - variant_name
 - variant_type
