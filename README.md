@@ -20,9 +20,9 @@ __Expected outcomes:__
 
 ### Data mining
 
-Script: gdc_download.py
+__Script__: gdc_download.py
 
-Modules: requests, json, re, os, tarfile, shutil, gzip
+__Modules__: requests, json, re, os, tarfile, shutil, gzip
 
 The script is able to search for mutation annotation format (MAF) files for masked somatic mutations from TCGA program in the NCI-GDC database and download all files matching the filters. The filters can also be changed to other programs and data types. The download happens in chunks of 1000 files, so the server does not time out. With this a file `existing_file_ids.txt` is created to keep track of the downloaded files. This file is read within a new run of the download code and will exclude files that are already present.
 Afterwards, all the downloads are unpacked until the MAF files and then stored in the `data/maf/` directory and empty directories are deleted for cleanliness.
@@ -31,9 +31,9 @@ Afterwards, all the downloads are unpacked until the MAF files and then stored i
 
 ### Data extraction
 
-Script: extractor.py
+__Script__: extractor.py
 
-Modules: pandas, os, glob, tqdm
+__Modules__: pandas, os, glob, tqdm
 
 *For future use it should be possible to load MAF files into the same directory and the workflow will extract the information from the files and store them together in a file called maf_data.csv. If there is already data available from previous imports, it will be read in and the new data will be compared to the existing, so only additional data will get loaded into the CSV.* ****(Not there yet. Necessary?)****
 
@@ -41,9 +41,9 @@ The extraction script loads in the MAF files stored in the `data/maf_files/` dir
 
 ### Conversion (only for TCGA data)
 
-Script: aliquot_to_sample.R
+__Script__: aliquot_to_sample.R
 
-Libraries: tidyverse, TCGAutils
+__Libraries__: tidyverse, TCGAutils
 
 With the package ‘TCGAutils’ it is possible to convert barcodes to UUIDs, which is used to obtain the original sample id. This is needed since in progenetix the sample id is used instead of the aliquot id. During the conversion the variable “Tumor_Sample_Barcode” will be labeled correctly as “aliquot_barcode”, since the given barcode belongs to an aliquot of a sample, and only the first 16 characters are kept as sample barcode. (Hierarchy in GDC Data Portal: Samples > Portions > Analytes > Aliquots). The needed columns for the conversion are:
 - Tumor_Sample_UUID
@@ -81,9 +81,9 @@ Furthermore, the columns are renamed to match the variable names used in the byc
 
 ### Curation
 
-Script: maf_curation_pgx.py
+__Script__: maf_curation_pgx.py
 
-Modules: os, pandas, bycon, pymongo, tqdm, numpy
+__Modules__: os, pandas, bycon, pymongo, tqdm, numpy
 
 The curation script will load the file created beforehand `pgx_import.tsv` and during the mapping process several conventions from progenetix will be applied:
 
@@ -118,7 +118,9 @@ With this the format for the database import is given and the data can be import
 
 ## ClinVar
 
-Modules: pandas, numpy, json, xml.etree.ElementTree, os, requests, gzip, io.BytesIO, shutil
+__Script__: clinvar.py
+
+__Modules__: pandas, numpy, json, xml.etree.ElementTree, os, requests, gzip, io.BytesIO, shutil
 
 ClinVar information is being retrieved with the goal to be included in the variant description in the data base.
 
