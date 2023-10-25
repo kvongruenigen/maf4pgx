@@ -114,5 +114,45 @@ With this the format for the database import is given and the data can be import
 
 ## ClinVar
 
+Modules: pandas, numpy, json, xml.etree.ElementTree, os, requests, gzip, io.BytesIO, shutil
+
 ClinVar information is being retrieved with the goal to be included in the variant description in the data base.
 
+The ClinVar workflow step uses the script clinvar.py and needs the `maf_data.csv` file to be present.
+In a first step variant names are generated from this file in the format `(Gene):HGVSc (HGVSp_Short)`.
+
+The additional file needed is the ClinVar variation release: `ClinVarVariationRelease_00-latest.xml`
+This will be downloaded and unpacked if not present.
+
+Before mapping the script also checks if mapped variants (output file: `mapped_variants.json`) are already present.
+
+With the needed prerequisit the XML file is parsed in a 'per element' fashion with `iterparse()` and the resulting element will be searched for the wanted entries, according to the [BeaconV2 schema](https://github.com/ga4gh-beacon/beacon-v2/blob/main/models/src/beacon-v2-default-model/genomicVariations/defaultSchema.yaml).
+The resulting objects have the follwing structure:
+- variant_name
+- variant_type
+- alternate_bases
+- reference_bases
+- identifiers
+    - clinvar_ids
+    - genomicHGVS_id
+    - transcriptHGVS_ids
+    - proteinHGVS_ids
+    - variant_alternative_ids
+- molecular_attributes
+    - gene_ids
+    - aminoacid_changes
+    - molecular_effects
+- clinical_interpretations
+    - category
+    - condition_id
+    - clinical_relevance
+    - effect
+        - id
+        - label
+    - effect_ids
+- location
+    - chromosome
+    - start
+    - stop
+    - sequence_id
+    - cytogenetic
