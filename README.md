@@ -97,6 +97,7 @@ During the mapping process, the file created beforehand will be loaded and sever
 - Subtracting the value 1 of the ‘start’ variable for SNPs, MNPs, and DELs
 - Subtracting the value 1 of the ‘end’ variable for INSs
 
+
 Additional explanation for the genomic coordinate system:
 
 [https://www.biostars.org/p/84686/](https://www.biostars.org/p/84686/)
