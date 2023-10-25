@@ -121,12 +121,14 @@ ClinVar information is being retrieved with the goal to be included in the varia
 The ClinVar workflow step uses the script clinvar.py and needs the `maf_data.csv` file to be present.
 In a first step variant names are generated from this file in the format `(Gene):HGVSc (HGVSp_Short)`.
 
-The additional file needed is the ClinVar variation release: `ClinVarVariationRelease_00-latest.xml`
-This will be downloaded and unpacked if not present.
-
 Before mapping the script also checks if mapped variants are already present.
 
-With the needed prerequisit the XML file is parsed in a 'per element' fashion with `iterparse()` and the resulting element will be searched for the wanted entries, according to the [BeaconV2 schema](https://github.com/ga4gh-beacon/beacon-v2/blob/main/models/src/beacon-v2-default-model/genomicVariations/defaultSchema.yaml). In the end the mapped variants are stored in the output file `data/mapped_variants.json`.
+The additional file needed is the [ClinVar variation release](https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/):
+`ClinVarVariationRelease_00-latest.xml`
+This will be downloaded and unpacked if not present.
+
+With the needed prerequisit the XML file is parsed in a 'per element' fashion with `iterparse()`, the starting tag for the element is `VariationArchive` and the resulting element will be searched for the desired entries, according to the [BeaconV2 schema](https://github.com/ga4gh-beacon/beacon-v2/blob/main/models/src/beacon-v2-default-model/genomicVariations/defaultSchema.yaml). In the end the mapped variants are stored in the output file `data/mapped_variants.json`.
+An example for the ClinVar XML file can be found [here](https://github.com/ncbi/clinvar/blob/master/sample_xmls/vcv_01.xml#L105).
 
 The resulting objects have the follwing structure:
 - variant_name
