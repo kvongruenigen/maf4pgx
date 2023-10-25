@@ -138,6 +138,7 @@ with open("data/existing_file_ids.txt", "w") as file_ids:
 
 # Unzip all files
 def unpack():
+    path = os.getcwd()
     # Move to directory with the downloaded data
     os.chdir(path + '/data/maf')
 
