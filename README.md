@@ -96,6 +96,7 @@ During the mapping process, the file created beforehand will be loaded and sever
 6. Conversion of the ‘1-start, fully-closed’ into a ‘0-start, half-open’ genomic coordinate system as recommended by the global alliance for genomics and health ([GA4GH](http://ga4gh.org)) - [https://genomestandards.org/standards/genome-coordinates/](https://genomestandards.org/standards/genome-coordinates/). This is achieved by:
 - Subtracting the value 1 of the ‘start’ variable for SNPs, MNPs, and DELs
 - Subtracting the value 1 of the ‘end’ variable for INSs
+
 Additional explanation for the genomic coordinate system:
 
 [https://www.biostars.org/p/84686/](https://www.biostars.org/p/84686/)
