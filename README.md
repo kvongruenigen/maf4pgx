@@ -11,25 +11,23 @@ The study will generate compound variant data through integration of the Progene
 
 # Workflow
 
-## Function
+## Novel data
 
-### Novel data
-
-#### Download
+### Download
 
 Modules: requests, json, re, os
 
 The workflow is able to search for mutation annotation format (MAF) files for masked somatic mutations from TCGA program in the NIC/GDC database and download all files. The download happens in chunks of 1000 files, so the server does not time out. With this a file is created to keep track of the downloaded files. This file is read within a new run of the download code and will exclude files that are already present.
 
-#### Unpacking zip files
+### Unpacking zip files
 
 Modules: 
 
 Afterwards, all the downloads are unpacked until the MAF files and then stored in the data directory in the maf_files folder and empty directories are deleted for cleanliness.
 
-### MAF files available
+## MAF files available
 
-#### Data extraction
+### Data extraction
 
 Modules: pandas, os, glob, tqdm
 
@@ -62,7 +60,7 @@ The extraction script will load in the MAF files stored in the `data/maf_files/`
 
 During the extraction the variable “Tumor_Sample_Barcode” will be labeled correctly as “aliquot_barcode”, since the given barcode belongs to an aliquot of a sample, and only the first 16 characters are kept as sample barcode. (Hierarchy in GDC Data Portal: Samples > Portions > Analytes > Aliquots)
 
-#### Conversion
+### Conversion
 
 Modules: tidyverse, TCGAutils
 
@@ -78,7 +76,7 @@ With the package ‘TCGAutils’ it is possible to convert barcodes to UUIDs, wh
 - variant_classification
 - variant_type
 
-#### Mapping
+### Mapping
 
 Modules: os, pandas, bycon, pymongo, tqdm, numpy
 
@@ -114,7 +112,7 @@ With this the format for the database import is given and the data can be import
 
 ---
 
-### ClinVar
+## ClinVar
 
 ClinVar information is being retrieved with the goal to be included in the variant description in the data base.
 
