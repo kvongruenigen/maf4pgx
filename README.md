@@ -119,7 +119,8 @@ Modules: pandas, numpy, json, xml.etree.ElementTree, os, requests, gzip, io.Byte
 ClinVar information is being retrieved with the goal to be included in the variant description in the data base.
 
 The ClinVar workflow step uses the script clinvar.py and needs the `maf_data.csv` file to be present.
-In a first step variant names are generated from this file in the format `(Gene):HGVSc (HGVSp_Short)`.
+In a first step variant names are generated from this file in the format `(Gene):HGVSc (HGVSp_Short)` and stored under `data/maf_variant_names.txt`.
+If the file is already present the variant names will be loaded instead of generated.
 
 Before mapping the script also checks if mapped variants are already present.
 
