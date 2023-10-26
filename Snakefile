@@ -60,7 +60,5 @@ rule test:
 		"~/switchdrive/baudisgroup/dbtools/byconaut/bin/variantsInserter.py --test"
 
 rule clinvar:
-	output:
-		"data/mapped_variants.json"
 	script:
 		"scripts/clinvar.py"

@@ -32,7 +32,8 @@ def conditionid(id):
 # Function to extract clinical information for a given VariationArchive element ######################
 def process_variation(variation_archive):
     variation_name = variation_archive.get("VariationName")
-
+    if variation_name in existing_variants:
+        return None
     # Needed format: (Gene):HGVSc (HGVSp)
     if "(" in variation_name:
         # Remove transcript information from the variation name
@@ -244,12 +245,21 @@ def process_variation(variation_archive):
         print("-------------------------------------------------------------------")
         return variant_dictionary
 
-
+# Crash handling #####################################################################################
+existing_variants = []
+if os.path.isfile("data/mapped_variants.json"):
+    print("Found existing mapped_variants.json file.")
+    print("Loading existing variants...")
+    with open("data/mapped_variants.json") as f:
+        for line in f:
+            variant = json.loads(line.strip())
+            existing_variants.append(variant["variant_name"])
+    
 # Loading variant data for ClinVar querying ##########################################################
 
 # Check if there is already a variant names file ------------------------------------------------
 if os.path.isfile("data/maf_variant_names.txt"):
-    print("Loading existing variant names...")
+    print("Loading variant names from data...")
     variant_names = []
     with open("data/maf_variant_names.txt") as f:
         for line in f:
@@ -295,7 +305,6 @@ print(variant_names[0:5])
 # Load XML data with iterparse #######################################################################
 
 # Check if the file exists --------------------------------------------------
-
 
 # Output directory
 output_directory = "data/"
