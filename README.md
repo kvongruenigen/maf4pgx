@@ -114,18 +114,19 @@ The curation script will load the file created beforehand `pgx_import.tsv` and d
 3. ‘chromosome’ is renamed into ‘reference_name’ and the ‘chr’ prefix is discarded
 4. The sequence ontology for sequence alteration (SO:0001059) is used to label all variants as SNVs - [http://www.sequenceontology.org/browser/](http://www.sequenceontology.org/browser/)
 5. Each SNV gets the sequence ontology for its specific type:
-- Single nucleotide polymorphisms (SNP): SO:0001483
-- Multiple nucleotide polymorphisms (MNP): SO:0002007 (include DNPs, TNPs, ONPs (≥ 4))
-- Deletions (DEL): SO:0000159
-- Insertions (INS): SO:0000667
-6. Conversion of the ‘1-start, fully-closed’ into a ‘0-start, half-open’ genomic coordinate system as recommended by the global alliance for genomics and health ([GA4GH](http://ga4gh.org)) - [https://genomestandards.org/standards/genome-coordinates/](https://genomestandards.org/standards/genome-coordinates/). This is achieved by:
-- Subtracting the value 1 of the ‘start’ variable for SNPs, MNPs, and DELs
-- Subtracting the value 1 of the ‘end’ variable for INSs
+    - Single nucleotide polymorphisms (SNP): SO:0001483
+    - Multiple nucleotide polymorphisms (MNP): SO:0002007 (include DNPs, TNPs, ONPs (≥ 4))
+    - Deletions (DEL): SO:0000159
+    - Insertions (INS): SO:0000667
+6. Conversion of the ‘1-start, fully-closed’ into a ‘0-start, half-open’ genomic coordinate system as recommended by the global alliance for genomics and health ([GA4GH](http://ga4gh.org)) - [https://genomestandards.org/standards/genome-coordinates/](https://genomestandards.org/standards/genome-coordinates/).
+
+    This is achieved by:
+
+    - Subtracting the value 1 of the ‘start’ variable for SNPs, MNPs, and DELs
+    - Subtracting the value 1 of the ‘end’ variable for INSs
 
 
-Additional explanation for the genomic coordinate system:
-
-[https://www.biostars.org/p/84686/](https://www.biostars.org/p/84686/)
+Additional explanation for the genomic coordinate system: [https://www.biostars.org/p/84686/](https://www.biostars.org/p/84686/)
 
 Then the sample ids are taken from a set of unique aliquot ids and mapped to the progenetix data base, where the internal biosample id and individual id is retrieved, if the sample id is in the data base. Additionally, an internal callset id is generated and added for each unique aliquot id. The generated and the retrieved variables are then assigned to the corresponding aliquot id.
 
