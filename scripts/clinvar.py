@@ -32,8 +32,7 @@ def conditionid(id):
 # Function to extract clinical information for a given VariationArchive element ######################
 def process_variation(variation_archive):
     variation_name = variation_archive.get("VariationName")
-    if variation_name in existing_variants:
-        return None
+
     # Needed format: (Gene):HGVSc (HGVSp)
     if "(" in variation_name:
         # Remove transcript information from the variation name
@@ -336,7 +335,9 @@ for event, elem in ET.iterparse(variation_xml, events=("start", "end")):
 
     # VariationArchive is root tag
     if event == "start" and elem.tag == "VariationArchive":
-
+        if elem.get("VariationName") in existing_variants:
+            elem.clear()
+            continue
         # Process the VariationArchive element
         found_variant = process_variation(elem)
 
