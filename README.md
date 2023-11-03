@@ -65,7 +65,7 @@ __Script__: aliquot_to_sample.R
 
 __Libraries__: tidyverse, TCGAutils
 
-With the package ‘TCGAutils’ it is possible to convert barcodes to UUIDs, which is used to obtain the original sample id. This is needed since in progenetix the sample id is used instead of the aliquot id. During the conversion the variable “Tumor_Sample_Barcode” will be labeled correctly as “aliquot_barcode”, since the given barcode belongs to an aliquot of a sample, and only the first 16 characters are kept as sample barcode. (Hierarchy in GDC Data Portal: Samples > Portions > Analytes > Aliquots). The needed columns for the conversion are:
+With the package ‘TCGAutils’ it is possible to convert barcodes to UUIDs, which is used to obtain the original sample id. This is needed since in Progenetix the sample id is used instead of the aliquot id. During the conversion the variable `Tumor_Sample_Barcode` will be labeled correctly as `aliquot_barcode`, since the given barcode belongs to an aliquot of a sample, and only the first 16 characters are kept as sample barcode. (Hierarchy in GDC Data Portal: Samples > Portions > Analytes > Aliquots). The needed columns for the conversion are:
 - Tumor_Sample_UUID
     - GDC aliquot UUID for tumor sample
 - case_id
@@ -83,7 +83,7 @@ With the package ‘TCGAutils’ it is possible to convert barcodes to UUIDs, wh
 - Reference_Allele
     - The plus strand reference allele at this position. Includes the deleted sequence for a deletion or "-" for an insertion.
 - Tumor_Seq_Allele2
-    - Tumor sequencing (discovery) allele 2 - ***Tumor_Seq_Allele1 is always the same as the Reference_Allele***
+    - Tumor sequencing (discovery) allele 2. A "-" symbol for a deletion represents a variant. A "-" symbol for an insertion represents wild-type allele. Novel inserted sequence for insertion does not include flanking reference bases. ***Tumor_Seq_Allele1 is always the same as the Reference_Allele***
 - Tumor_Sample_Barcode
     - Aliquot barcode for the tumor sample
 
@@ -108,17 +108,17 @@ __Script__: maf_curation_pgx.py
 
 __Modules__: os, pandas, bycon, pymongo, tqdm, numpy
 
-The curation script will load the file created beforehand `pgx_import.tsv` and during the mapping process several conventions from progenetix will be applied:
+The curation script will load the file created beforehand `pgx_import.tsv` and during the curation process several conventions from Progenetix will be applied:
 
 1. The case and sample ids will get the prefix ‘pgx:TCGA.’
-3. ‘chromosome’ is renamed into ‘reference_name’ and the ‘chr’ prefix is discarded
-4. The sequence ontology for sequence alteration (SO:0001059) is used to label all variants as SNVs - [http://www.sequenceontology.org/browser/](http://www.sequenceontology.org/browser/)
-5. Each SNV gets the sequence ontology for its specific type:
-    - Single nucleotide polymorphisms (SNP): SO:0001483
-    - Multiple nucleotide polymorphisms (MNP): SO:0002007 (include DNPs, TNPs, ONPs (≥ 4))
-    - Deletions (DEL): SO:0000159
-    - Insertions (INS): SO:0000667
-6. Conversion of the ‘1-start, fully-closed’ into a ‘0-start, half-open’ genomic coordinate system as recommended by the global alliance for genomics and health ([GA4GH](http://ga4gh.org)) - [https://genomestandards.org/standards/genome-coordinates/](https://genomestandards.org/standards/genome-coordinates/).
+2. ‘chromosome’ is renamed into ‘reference_name’ and the ‘chr’ prefix is discarded
+3. The [sequence ontology](http://www.sequenceontology.org/) term for sequence alteration ([SO:0001059](http://www.sequenceontology.org/browser/current_release/term/SO:0001059)) is used to label all variants as SNVs.
+   Each SNV gets the sequence ontology term for its specific type:
+    - [SO:0001483](http://www.sequenceontology.org/browser/current_release/term/SO:0001483): Single nucleotide variants (SNV)
+    - [SO:0002007](http://www.sequenceontology.org/browser/current_release/term/SO:0002007): Multiple nucleotide variants (MNV), which includes DNPs, TNPs, ONPs (≥ 4))
+    - [SO:0000159](http://www.sequenceontology.org/browser/current_release/term/SO:0000159): Deletions (DEL)
+    - [SO:0000667](http://www.sequenceontology.org/browser/current_release/term/SO:0000667): Insertions (INS)
+5. Conversion of the ‘1-start, fully-closed’, also called interresidue-based, into a ‘0-start, half-open’, also called residue-based, genomic coordinate system as recommended by the global alliance for genomics and health ([GA4GH](http://ga4gh.org)) - [https://genomestandards.org/standards/genome-coordinates/](https://genomestandards.org/standards/genome-coordinates/).
 
     This is achieved by:
 
@@ -128,15 +128,15 @@ The curation script will load the file created beforehand `pgx_import.tsv` and d
 
 Additional explanation for the genomic coordinate system: [https://www.biostars.org/p/84686/](https://www.biostars.org/p/84686/)
 
-Then the sample ids are taken from a set of unique aliquot ids and mapped to the progenetix data base, where the internal biosample id and individual id is retrieved, if the sample id is in the data base. Additionally, an internal callset id is generated and added for each unique aliquot id. The generated and the retrieved variables are then assigned to the corresponding aliquot id.
+Then the set of unique sample identifiers is mapped to the Progenetix data base, where the internal positions biosample_id, corresponding to the sample identifier, and individual_id, corresponding to the individual the tumor sample belongs to, is retrieved, if the sample identifier is matched in the data base. Additionally, an internal position callset_id is generated and added for each unique sample identifier. The generated and the retrieved variables are then assigned to the corresponding sample identifier.
 
-In the end, the variants that couldn’t be mapped to a sample id will be labeled as new variants and stored in a separate file. The variants ready to be imported and the new variants will be stored as a TSV in the data directory with the following format:
+In the end, the variants that could not be mapped to a sample identifier will be discarded. The variants ready to be imported will be stored as varImport.tsv in the data directory with the following format:
 
 | biosample_id | variant_id | callset_id | individual_id | reference_name | start | end | reference_bases | alternate_bases | variant_classification | variant_state_id | specific_so | case_id | sample_id | snv_type |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 
-With this the format for the database import is given and the data can be import into the progenetix MongoDB.
+With this the format for the database import is given and the data can be import into the Progenetix MongoDB.
 
 ---
 
@@ -150,7 +150,7 @@ __Modules__: pandas, numpy, json, xml.etree.ElementTree, os, requests, gzip, io.
 ClinVar information is being retrieved with the goal to be included in the variant description in the data base.
 
 The ClinVar workflow step uses the script clinvar.py and needs the `maf_data.csv` file to be present.
-In a first step variant names are generated from this file in the format `(Gene):HGVSc (HGVSp_Short)` and stored under `data/maf_variant_names.txt`.
+In a first step variant names are generated from this file in the format `(Hugo_Symbol):HGVSc (HGVSp_Short)` and stored under `data/maf_variant_names.txt`.
 If the file is already present the variant names will be loaded instead of generated.
 
 Before mapping the script also checks if mapped variants are already present.
@@ -162,7 +162,7 @@ This will be downloaded and unpacked if not present.
 With the needed prerequisit the XML file is parsed in a 'per element' fashion with `iterparse()`, the starting tag for the element is `VariationArchive` and the resulting element will be searched for the desired entries, according to the [BeaconV2 schema](https://github.com/ga4gh-beacon/beacon-v2/blob/main/models/src/beacon-v2-default-model/genomicVariations/defaultSchema.yaml). In the end the mapped variants are stored in the output file `data/mapped_variants.json`.
 An example for the ClinVar XML file can be found [here](https://github.com/ncbi/clinvar/blob/master/sample_xmls/vcv_01.xml).
 
-The resulting objects have the follwing structure:
+The resulting objects have the following structure:
 - variant_name
 - variant_type
 - alternate_bases
@@ -184,7 +184,7 @@ The resulting objects have the follwing structure:
     - effect
         - id
         - label
-    - effect_ids
+    - effect_alternative_ids
 - location
     - chromosome
     - start
