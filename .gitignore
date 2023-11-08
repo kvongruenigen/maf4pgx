@@ -1,3 +1,4 @@
 /data/*
 /.snakemake/*
 .DS_Store
+backup_mapped_variants.json
