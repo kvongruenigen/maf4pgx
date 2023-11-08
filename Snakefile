@@ -3,7 +3,7 @@ rule targets:
 	input:
 		"data/maf_data.csv",
 		"data/pgx_import.tsv",
-		"data/varImport.tsv"
+		"data/varImport.tsv",
 		"data/mapped_variants.json"
 
 ##
@@ -60,5 +60,9 @@ rule test:
 		"~/switchdrive/baudisgroup/dbtools/byconaut/bin/variantsInserter.py --test"
 
 rule clinvar:
+	input:
+		"data/maf_data.csv"
+	output:
+		"data/mapped_variants.json"
 	script:
 		"scripts/clinvar.py"
