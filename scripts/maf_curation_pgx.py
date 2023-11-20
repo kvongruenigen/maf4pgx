@@ -80,6 +80,7 @@ if data_source == "PCAWG":
     maf_data["case_id"] = ["pgx:PCAWG"] * len(maf_data["sample_id"])
 
 print("Mapping completed\nWriting files...")
+
 # Clean up
 maf_data = maf_data[["biosample_id", "variant_id", "callset_id", "individual_id",
     "reference_name", "start", "end", "reference_bases",

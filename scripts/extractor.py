@@ -84,7 +84,7 @@ data['duplicate_identifier'] = (data['Chromosome'].astype(str) + ':'
 number_duplications = data.duplicated(subset=['duplicate_identifier']).sum()
 
 duplicated_variants = data[data.duplicated(subset=['duplicate_identifier'], keep = False)]
-print("Found {number_duplications} duplicated variants in the dataset.")
+print(f"Found {number_duplications} duplicated variants in the dataset.")
 
 if number_duplications > 0:
     print("Removing duplicated variants...")
@@ -107,12 +107,15 @@ if number_duplications > 0:
     # Get the indexes for the variants to drop
     indexes_for_dropping = list(variants_to_drop.index)
     data.drop(index=indexes_for_dropping)
-    data.drop(columns=['sample_barcode', 'analyte_code', 'plate_number'])
+    data.drop(columns=['sample_barcode', 'analyte_code', 'plate_number', 'duplicate_identifier'])
     print("Done.")
+
+# Add anchor base for DEL and INS
+data.loc[data['Variant_Type'].isin(['DEL', 'INS']), 'vcf_anchor_base'] = data['CONTEXT'].str[4]
 
 # Check for the directory
 os.makedirs("data/", exist_ok=True)
 print("Writing output file...")
 # and create .csv file in the directory
-data.to_csv("data/data.csv", index=False)
+data.to_csv("data/maf_data.csv", index=False)
 print("Done.")

@@ -16,7 +16,7 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
                             "Start_Position", "End_Position",
                             "Variant_Classification", "Variant_Type",
                             "Reference_Allele", "Tumor_Seq_Allele2",
-                            "Tumor_Sample_Barcode"))
+                            "Tumor_Sample_Barcode", "vcf_anchor_base"))
 
   if (nchar(data$Tumor_Sample_Barcode[1]) > 16) {
     data$aliquot_barcode <- data$Tumor_Sample_Barcode
@@ -50,16 +50,26 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
     #####################################################################
 
     # Rename the columns
-    colnames(mapfile) <- c("aliquot_id", "case_id", "chromosome",
-                          "start", "end", "variant_classification", "snv_type",
-                          "reference_bases", "alternate_bases", "sample_barcode",
-                          "aliquot_barcode", "sample_id")
+    mapfile <- mapfile %>%
+      rename(
+        aliquot_id = Tumor_Sample_UUID,
+        chromosome = Chromosome,
+        start = Start_Position,
+        end = End_Position,
+        variant_classification = Variant_Classification,
+        snv_type = Variant_Type,
+        reference_bases = Reference_Allele,
+        alternate_bases = Tumor_Seq_Allele2,
+        sample_barcode = Tumor_Sample_Barcode,
+        sample_id = sample_ids
+      )
 
-    # Select important ones and rearrange
+    # Select needed columns and rearrange
     mapfile <- mapfile %>% select(case_id, sample_id, aliquot_id,
                                   chromosome, start, end,
                                   variant_classification, snv_type,
-                                  reference_bases, alternate_bases)
+                                  reference_bases, alternate_bases,
+                                  vcf_anchor_base)
 
     cat("Writing output file...\n")
     # Write file
@@ -69,9 +79,20 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
   } else {
     cat("No conversion necessary.\n")
     mapfile <- data
-    colnames(mapfile) <- c("sample_id", "case_id", "chromosome",
-                          "start", "end", "variant_classification", "snv_type",
-                          "reference_bases", "alternate_bases", "sample_barcode")
+    # Rename the columns
+    mapfile <- mapfile %>%
+      rename(
+        aliquot_id = Tumor_Sample_UUID,
+        chromosome = Chromosome,
+        start = Start_Position,
+        end = End_Position,
+        variant_classification = Variant_Classification,
+        snv_type = Variant_Type,
+        reference_bases = Reference_Allele,
+        alternate_bases = Tumor_Seq_Allele2,
+        sample_barcode = Tumor_Sample_Barcode,
+        sample_id = sample_ids
+      )
     # Select important ones and rearrange
     mapfile <- mapfile %>% select(case_id, sample_id,
                                   chromosome, start, end,
