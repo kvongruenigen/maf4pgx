@@ -31,8 +31,8 @@ maf_data["variant_id"] = [" "] * len(maf_data)
 
 # Naming convention from progenetix
 maf_data["reference_name"] = maf_data["chromosome"].str.slice(start=3)
-maf_data.loc[maf_data["reference_bases"] == "-", "reference_bases"] = "."
-maf_data.loc[maf_data["alternate_bases"] == "-", "alternate_bases"] = "."
+maf_data.loc[maf_data["reference_bases"] == "-", "reference_bases"] = ""
+maf_data.loc[maf_data["alternate_bases"] == "-", "alternate_bases"] = ""
 
 
 # Adding sequence ontologies - http://www.sequenceontology.org/browser/
