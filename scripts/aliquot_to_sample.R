@@ -16,7 +16,7 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
                             "Start_Position", "End_Position",
                             "Variant_Classification", "Variant_Type",
                             "Reference_Allele", "Tumor_Seq_Allele2",
-                            "Tumor_Sample_Barcode", "vcf_anchor_base"))
+                            "Tumor_Sample_Barcode"))
 
   if (nchar(data$Tumor_Sample_Barcode[1]) > 16) {
     data$aliquot_barcode <- data$Tumor_Sample_Barcode
@@ -68,8 +68,7 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
     mapfile <- mapfile %>% select(case_id, sample_id, aliquot_id,
                                   chromosome, start, end,
                                   variant_classification, snv_type,
-                                  reference_bases, alternate_bases,
-                                  vcf_anchor_base)
+                                  reference_bases, alternate_bases)
 
     cat("Writing output file...\n")
     # Write file

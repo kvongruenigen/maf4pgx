@@ -110,8 +110,6 @@ if number_duplications > 0:
     data.drop(columns=['sample_barcode', 'analyte_code', 'plate_number', 'duplicate_identifier'])
     print("Done.")
 
-# Add anchor base for DEL and INS
-data.loc[data['Variant_Type'].isin(['DEL', 'INS']), 'vcf_anchor_base'] = data['CONTEXT'].str[4]
 
 # Check for the directory
 os.makedirs("data/", exist_ok=True)
