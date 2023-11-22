@@ -31,8 +31,8 @@ maf_data["variant_id"] = [" "] * len(maf_data)
 
 # Naming convention from progenetix
 maf_data["reference_name"] = maf_data["chromosome"].str.slice(start=3)
-maf_data.loc[maf_data["reference_bases"] == "-", "reference_bases"] = ""
-maf_data.loc[maf_data["alternate_bases"] == "-", "alternate_bases"] = ""
+maf_data.loc[maf_data["reference_sequence"] == "-", "reference_sequence"] = "None"
+maf_data.loc[maf_data["sequence"] == "-", "sequence"] = "None"
 
 
 # Adding sequence ontologies - http://www.sequenceontology.org/browser/
@@ -83,8 +83,8 @@ print("Mapping completed\nWriting files...")
 
 # Clean up
 maf_data = maf_data[["biosample_id", "variant_id", "callset_id", "individual_id",
-    "reference_name", "start", "end", "reference_bases",
-    "alternate_bases", "variant_classification", "variant_state_id",
+    "reference_name", "start", "end", "reference_sequence",
+    "sequence", "variant_classification", "variant_state_id",
     "specific_so", "case_id", "sample_id", "snv_type"]]
 
 maf_data = maf_data.replace("", np.nan)

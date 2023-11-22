@@ -58,8 +58,8 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
         end = End_Position,
         variant_classification = Variant_Classification,
         snv_type = Variant_Type,
-        reference_bases = Reference_Allele,
-        alternate_bases = Tumor_Seq_Allele2,
+        reference_sequence = Reference_Allele,
+        sequence = Tumor_Seq_Allele2,
         sample_barcode = Tumor_Sample_Barcode,
         sample_id = sample_ids
       )
@@ -68,7 +68,7 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
     mapfile <- mapfile %>% select(case_id, sample_id, aliquot_id,
                                   chromosome, start, end,
                                   variant_classification, snv_type,
-                                  reference_bases, alternate_bases)
+                                  reference_sequence, sequence)
 
     cat("Writing output file...\n")
     # Write file
@@ -87,8 +87,8 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
         end = End_Position,
         variant_classification = Variant_Classification,
         snv_type = Variant_Type,
-        reference_bases = Reference_Allele,
-        alternate_bases = Tumor_Seq_Allele2,
+        reference_sequence = Reference_Allele,
+        sequence = Tumor_Seq_Allele2,
         sample_barcode = Tumor_Sample_Barcode,
         sample_id = sample_ids
       )
@@ -96,7 +96,7 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
     mapfile <- mapfile %>% select(case_id, sample_id,
                                   chromosome, start, end,
                                   variant_classification, snv_type,
-                                  reference_bases, alternate_bases)
+                                  reference_sequence, sequence)
 
     cat("Writing output file...\n")
     # Write file
