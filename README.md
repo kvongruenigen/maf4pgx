@@ -132,7 +132,7 @@ Then the set of unique sample identifiers is mapped to the Progenetix data base,
 
 In the end, the variants that could not be mapped to a sample identifier will be discarded. The variants ready to be imported will be stored as varImport.tsv in the data directory with the following format:
 
-| biosample_id | variant_id | callset_id | individual_id | reference_name | start | end | reference_bases | alternate_bases | variant_classification | variant_state_id | specific_so | case_id | sample_id | snv_type |
+| biosample_id | variant_id | callset_id | individual_id | reference_name | start | end | reference_sequence | sequence | variant_classification | variant_state_id | specific_so | case_id | sample_id | snv_type |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 
@@ -165,8 +165,8 @@ An example for the ClinVar XML file can be found [here](https://github.com/ncbi/
 The resulting objects have the following structure:
 - variant_name
 - variant_type
-- alternate_bases
-- reference_bases
+- sequence
+- reference_sequence
 - identifiers
     - clinvar_ids
     - genomicHGVS_id
