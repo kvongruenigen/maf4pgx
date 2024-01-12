@@ -1,5 +1,5 @@
 # This rule executes all the code except the Novel Data Download
-rule targets:
+rule import_file:
 	input:
 		"data/maf_data.csv",
 		"data/pgx_import.tsv",
@@ -20,14 +20,14 @@ rule download:
 ##
 
 # Concatenate the MAF data into a csv file
-rule extract:
+rule data_extraction:
 	output:
 		"data/maf_data.csv"
 	script:
 		"scripts/extractor.py"
 
 # Convert the sample barcodes to the sample ids for mapping
-rule barcodes:
+rule barcode_conversion:
 	input: 
 		"data/maf_data.csv"
 	output: 
@@ -46,7 +46,7 @@ rule mapping:
 		"scripts/maf_curation_pgx.py"
 
 # For definite import into the database
-rule import:
+rule pgx_import:
 	input:
 		"data/varImport.tsv"
 	script:
@@ -59,7 +59,7 @@ rule test:
 	script:
 		"~/switchdrive/baudisgroup/dbtools/byconaut/bin/variantsInserter.py --test"
 
-rule clinvar:
+rule clinvar_annotation:
 	input:
 		"data/maf_data.csv"
 	output:
