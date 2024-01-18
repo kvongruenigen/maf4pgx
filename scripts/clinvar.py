@@ -163,7 +163,7 @@ def process_variation(variation_archive):
         # Clinical interpretations (Variant level data)
         ############################################################################################################
 
-        variant_dictionary["cinical_interpretations"] = []
+        variant_dictionary["clinical_interpretations"] = []
 
         # Get all traits
         for trait in variation_archive.findall(".//Interpretation/ConditionList/TraitSet/Trait"):
@@ -215,7 +215,7 @@ def process_variation(variation_archive):
                     },
                     "effect_ids": labels,
                 }
-                variant_dictionary["cinical_interpretations"].append(clinical_interpretation_dictionary)
+                variant_dictionary["clinical_interpretations"].append(clinical_interpretation_dictionary)
 
         ############################################################################################################
         # Location
