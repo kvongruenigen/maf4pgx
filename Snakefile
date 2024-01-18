@@ -66,3 +66,9 @@ rule clinvar_annotation:
 		"data/mapped_variants.json"
 	script:
 		"scripts/clinvar.py"
+
+rule clinvar_import:
+input:
+	"data/mapped_variants.json"
+script:
+	"scripts/clinvarInserter.py"

@@ -29,14 +29,14 @@ filters = {
             "op": "in",
             "content": {
                 "field": "cases.project.program.name",
-                "value": [input("Enter program name (e.g., TCGA): ")]
+                "value": "TCGA"
             }
         },
         {
             "op": "in",
             "content": {
                 "field": "files.data_type",
-                "value": [input("Enter data type (e.g., Masked Somatic Mutation): ")]
+                "value": "Masked Somatic Mutation"
             }
         }
     ]
