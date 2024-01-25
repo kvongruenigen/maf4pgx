@@ -20,11 +20,6 @@ maf_data = pd.read_csv("data/pgx_import.tsv", sep = "\t",
 maf_data.columns = maf_data.columns.str.lower()
 
 print("Preparation for mapping...")
-data_source = input("Please enter the data source (TCGA/PCAWG): ").upper()
-print("Mapping data from " + data_source + " to Progenetix...")
-if data_source != "TCGA" and data_source != "PCAWG":
-    print("Please enter a valid data source!")
-    exit()
 
 # Create placeholder for variant id, gets created while import
 maf_data["variant_id"] = [" "] * len(maf_data)
@@ -35,18 +30,25 @@ maf_data.loc[maf_data["reference_sequence"] == "-", "reference_sequence"] = "Non
 maf_data.loc[maf_data["sequence"] == "-", "sequence"] = "None"
 
 
+
+# DNP, TNP, and ONP are registered as MNV - multiple nucleotide variants
+maf_data["snv_type"].replace({"SNP": "SNV",
+                              "DNP": "MNV",
+                              "TNP": "MNV",
+                              "ONP": "MNV",
+}, inplace=True)
+
 # Adding sequence ontologies - http://www.sequenceontology.org/browser/
 maf_data["variant_state_id"] = ["SO:0001059"] * len(maf_data)
-maf_data.loc[maf_data["snv_type"] == "SNP", "specific_so"] = "SO:0001483"
-maf_data.loc[maf_data["snv_type"] == "DNP", "specific_so"] = "SO:0002007" # DNP, TNP, and ONP are registered as MNV - multiple nucleotide variants
-maf_data.loc[maf_data["snv_type"] == "TNP", "specific_so"] = "SO:0002007"
-maf_data.loc[maf_data["snv_type"] == "ONP", "specific_so"] = "SO:0002007"
+maf_data.loc[maf_data["snv_type"] == "SNV", "specific_so"] = "SO:0001483"
+maf_data.loc[maf_data["snv_type"] == "MNV", "specific_so"] = "SO:0002007"
 maf_data.loc[maf_data["snv_type"] == "DEL", "specific_so"] = "SO:0000159"
 maf_data.loc[maf_data["snv_type"] == "INS", "specific_so"] = "SO:0000667"
 
+
 # Convert 1-based MAF files to 0-based
 # Explanation @ https://www.biostars.org/p/84686/
-maf_data.loc[maf_data["snv_type"].isin(["SNP", "DNP", "TNP", "ONP", "DEL"]), "start"] -= 1
+maf_data.loc[maf_data["snv_type"].isin(["SNV", "MNV", "DEL"]), "start"] -= 1
 maf_data.loc[maf_data["snv_type"] == "INS", "end"] -= 1
 
 # Generate callset_ids per aliquot for import and map sample_id to biosample_id
@@ -72,12 +74,8 @@ for sample_id in tqdm(set(maf_data["sample_id"])):
         ["callset_id", "biosample_id", "individual_id"]] = cs_id, biosample_id, individual_id
 
 # Create legacy ids / external references
-if data_source == "TCGA":
-    maf_data["case_id"] = "pgx:TCGA." + maf_data["case_id"]
-    maf_data["sample_id"] = "pgx:TCGA." + maf_data["sample_id"]
-if data_source == "PCAWG":
-    maf_data["sample_id"] = "pgx:PCAWG." + maf_data["sample_id"]
-    maf_data["case_id"] = ["pgx:PCAWG"] * len(maf_data["sample_id"])
+maf_data["case_id"] = "pgx:TCGA." + maf_data["case_id"]
+maf_data["sample_id"] = "pgx:TCGA." + maf_data["sample_id"]
 
 print("Mapping completed\nWriting files...")
 
