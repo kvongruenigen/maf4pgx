@@ -2,6 +2,7 @@
 rule import_file:
 	input:
 		"data/maf_data.csv",
+		"data/maf_data_duplicates_removed.csv",
 		"data/pgx_import.tsv",
 		"data/varImport.tsv",
 		"data/mapped_variants.json"
@@ -26,10 +27,19 @@ rule data_extraction:
 	script:
 		"scripts/extractor.py"
 
+# Remove duplicates
+rule remove_duplicates:
+	input:
+		"data/maf_data.csv"
+	output:
+		"data/maf_data_duplicates_removed.csv"
+	script:
+		"scripts/duplicates.py"
+
 # Convert the sample barcodes to the sample ids for mapping
 rule barcode_conversion:
 	input: 
-		"data/maf_data.csv"
+		"data/maf_data_duplicates_removed.csv"
 	output: 
 		"data/pgx_import.tsv"
 	script:

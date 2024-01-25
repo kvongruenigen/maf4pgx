@@ -7,7 +7,7 @@ suppressPackageStartupMessages(library(tidyverse))
 library(TCGAutils)
 # Import data frame and extract barcodes
 cat("Loading data...\n")
-data <- read_csv("data/maf_data.csv", show_col_types = FALSE)
+data <- read_csv("data/maf_data_duplicates_removed.csv", show_col_types = FALSE)
 
 if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
   # Information to be extracted for variant import
