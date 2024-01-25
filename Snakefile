@@ -69,7 +69,8 @@ rule test:
 	script:
 		"~/switchdrive/baudisgroup/dbtools/byconaut/bin/variantsInserter.py --test"
 
-rule clinvar_annotation:
+# ClinVar annotation
+rule clinvar_mapping:
 	input:
 		"data/maf_data.csv"
 	output:
@@ -78,7 +79,7 @@ rule clinvar_annotation:
 		"scripts/clinvar.py"
 
 rule clinvar_import:
-input:
-	"data/mapped_variants.json"
-script:
-	"scripts/clinvarInserter.py"
+	input:
+		"data/mapped_variants.json"
+	script:
+		"scripts/clinvarInserter.py"
