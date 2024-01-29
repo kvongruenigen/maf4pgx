@@ -32,7 +32,7 @@ maf_data.loc[maf_data["sequence"] == "-", "sequence"] = "None"
 
 
 # DNP, TNP, and ONP are registered as MNV - multiple nucleotide variants
-maf_data["snv_type"].replace({"SNP": "SNV",
+maf_data["variant_type"].replace({"SNP": "SNV",
                               "DNP": "MNV",
                               "TNP": "MNV",
                               "ONP": "MNV",
@@ -40,16 +40,16 @@ maf_data["snv_type"].replace({"SNP": "SNV",
 
 # Adding sequence ontologies - http://www.sequenceontology.org/browser/
 maf_data["variant_state_id"] = ["SO:0001059"] * len(maf_data)
-maf_data.loc[maf_data["snv_type"] == "SNV", "specific_so"] = "SO:0001483"
-maf_data.loc[maf_data["snv_type"] == "MNV", "specific_so"] = "SO:0002007"
-maf_data.loc[maf_data["snv_type"] == "DEL", "specific_so"] = "SO:0000159"
-maf_data.loc[maf_data["snv_type"] == "INS", "specific_so"] = "SO:0000667"
+maf_data.loc[maf_data["variant_type"] == "SNV", "specific_so"] = "SO:0001483"
+maf_data.loc[maf_data["variant_type"] == "MNV", "specific_so"] = "SO:0002007"
+maf_data.loc[maf_data["variant_type"] == "DEL", "specific_so"] = "SO:0000159"
+maf_data.loc[maf_data["variant_type"] == "INS", "specific_so"] = "SO:0000667"
 
 
 # Convert 1-based MAF files to 0-based
 # Explanation @ https://www.biostars.org/p/84686/
-maf_data.loc[maf_data["snv_type"].isin(["SNV", "MNV", "DEL"]), "start"] -= 1
-maf_data.loc[maf_data["snv_type"] == "INS", "end"] -= 1
+maf_data.loc[maf_data["variant_type"].isin(["SNV", "MNV", "DEL"]), "start"] -= 1
+maf_data.loc[maf_data["variant_type"] == "INS", "end"] -= 1
 
 # Generate callset_ids per aliquot for import and map sample_id to biosample_id
 print("Starting progenetix mapping...")
@@ -79,17 +79,18 @@ maf_data["sample_id"] = "pgx:TCGA." + maf_data["sample_id"]
 
 print("Mapping completed\nWriting files...")
 
+maf_data = maf_data.replace("", np.nan)
+
+matching_maf_data = maf_data.dropna(subset = ["biosample_id"])
 # Clean up
-maf_data = maf_data[["biosample_id", "variant_id", "callset_id", "individual_id",
+import_variants = matching_maf_data[["biosample_id", "variant_id", "callset_id", "individual_id",
     "reference_name", "start", "end", "reference_sequence",
     "sequence", "variant_classification", "variant_state_id",
-    "specific_so", "case_id", "sample_id", "snv_type"]]
-
-maf_data = maf_data.replace("", np.nan)
-variants_in_db = maf_data.dropna(subset = ["biosample_id"])
+    "specific_so", "case_id", "sample_id", "variant_type"]]
 
 # Write finished mapping file
 os.makedirs("data/", exist_ok = True) # Check for the directory
-variants_in_db.to_csv("data/varImport.tsv", sep = "\t", index = False)  # and create .tsv file in the directory
+import_variants.to_csv("data/varImport.tsv", sep = "\t", index = False)  # and create .tsv file in the directory
+matching_maf_data.to_csv("data/matching_maf_data_curated.csv")  # and create .tsv file in the directory
 
 print("Done.\n- Variants ready for import: data/varImport.tsv")

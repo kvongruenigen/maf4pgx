@@ -44,5 +44,7 @@ if number_duplications > 0:
     indexes_for_dropping = list(variants_to_drop.index)
     maf_data.drop(index=indexes_for_dropping)
 
+drop = ["duplicate_identifier", "plate_number", "analyte_code"]
+maf_data.drop(drop, axis=1, inplace=True)
 #  Save data
 maf_data.to_csv('data/maf_data_duplicates_removed.csv', index=False)
