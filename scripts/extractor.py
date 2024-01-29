@@ -59,58 +59,6 @@ print('Columns removed:')
 for column in dropped_columns:
     print(column)
 
-# Remove duplicates ##########################################################
-print("Checking for duplicated variants...")
-
-# Generate needed columns
-
-#  Barcode explanation: https://docs.gdc.cancer.gov/Encyclopedia/pages/TCGA_Barcode/
-combined_data['sample_barcode'] = combined_data['Tumor_Sample_Barcode'].str[0:16]
-
-#  Analyte codes: https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/portion-analyte-codes
-combined_data['analyte_code'] = combined_data['Tumor_Sample_Barcode'].str[19]
-
-# Plate numbers:
-combined_data['plate_number'] = combined_data['Tumor_Sample_Barcode'].str[21:25]
-
-# Identifier for duplicates based on genomic location, mutation and sample
-combined_data['duplicate_identifier'] = (combined_data['Chromosome'].astype(str) + ':'
-                                    + combined_data['Start_Position'].astype(str) + '-'
-                                    + combined_data['End_Position'].astype(str) + ';'
-                                    + combined_data['Reference_Allele'] + '>'
-                                    + combined_data['Tumor_Seq_Allele2']
-                                    + '(' + combined_data['sample_barcode'] + ')')
-
-number_duplications = combined_data.duplicated(subset=['duplicate_identifier']).sum()
-
-duplicated_variants = combined_data[combined_data.duplicated(subset=['duplicate_identifier'], keep = False)]
-print(f"Found {number_duplications} duplicated variants in the dataset.")
-
-if number_duplications > 0:
-    print("Removing duplicated variants...")
-
-    # Create list for the data frame with the duplicated variants
-    variants_to_drop = []
-
-    # Loop through each duplication, so that sorting works
-    for identifier in duplicated_variants['duplicate_identifier'].unique():
-
-        # D > W, G, X, unless higher plate number (here higher means higher number)
-        df = duplicated_variants.loc[duplicated_variants['duplicate_identifier'] == identifier].sort_values(by=['plate_number', 'analyte_code'], ascending=[False, True])
-
-        # df.iloc[0] will be kept, the rest dropped
-        variants_to_drop.append(pd.DataFrame(df.iloc[1:]))
-
-    # Concatenate the dataframes to one
-    variants_to_drop = pd.concat(variants_to_drop)
-
-    # Get the indexes for the variants to drop
-    indexes_for_dropping = list(variants_to_drop.index)
-    combined_data.drop(index=indexes_for_dropping)
-    combined_data.drop(columns=['sample_barcode', 'analyte_code', 'plate_number', 'duplicate_identifier'])
-    print("Done.")
-
-
 # Check for the directory
 os.makedirs("data/", exist_ok=True)
 print("Writing output file...")

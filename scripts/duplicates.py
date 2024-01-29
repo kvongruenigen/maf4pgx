@@ -24,24 +24,25 @@ number_duplications = maf_data.duplicated(subset=['duplicate_identifier']).sum()
 duplicated_variants = maf_data[maf_data.duplicated(subset=['duplicate_identifier'], keep = False)]
 print(f"Found {number_duplications} duplicated variants")
 
-print("Applying filters to remove duplicates")
-print("Filter analyte code: D > W, G, X, unless higher plate number")
-variants_to_drop = []
-for identifier in duplicated_variants['duplicate_identifier'].unique():
-    
-    ####  BROAD filtering ####
-    # D > W, G, X, unless higher plate number (here higher means higher number)
-    df = duplicated_variants.loc[duplicated_variants['duplicate_identifier'] == identifier].sort_values(by=['plate_number', 'analyte_code'], ascending=[False, True])
-    # variants_to_keep.append(pd.DataFrame(df.iloc[0]).transpose())
-    variants_to_drop.append(pd.DataFrame(df.iloc[1:]))
+if number_duplications > 0:
+    print("Applying filters to remove duplicates")
+    print("Filter analyte code: D > W, G, X, unless higher plate number")
+    variants_to_drop = []
+    for identifier in duplicated_variants['duplicate_identifier'].unique():
+        
+        ####  BROAD filtering ####
+        # D > W, G, X, unless higher plate number (here higher means higher number)
+        df = duplicated_variants.loc[duplicated_variants['duplicate_identifier'] == identifier].sort_values(by=['plate_number', 'analyte_code'], ascending=[False, True])
+        # variants_to_keep.append(pd.DataFrame(df.iloc[0]).transpose())
+        variants_to_drop.append(pd.DataFrame(df.iloc[1:]))
 
-    # D    63692
-    # W     3887
+        # D    63692
+        # W     3887
 
-variants_to_drop = pd.concat(variants_to_drop)
+    variants_to_drop = pd.concat(variants_to_drop)
 
-indexes_for_dropping = list(variants_to_drop.index)
-maf_data.drop(index=indexes_for_dropping)
+    indexes_for_dropping = list(variants_to_drop.index)
+    maf_data.drop(index=indexes_for_dropping)
 
 #  Save data
 maf_data.to_csv('data/maf_data_duplicates_removed.csv', index=False)
