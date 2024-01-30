@@ -1,5 +1,6 @@
 # Aliquot to sample conversion
-# This script converts the aliquot barcodes to sample UUIDs with the package TCGAutils.
+# This script converts the aliquot barcodes to
+# sample UUIDs with the package TCGAutils.
 # ONLY FOR TCGA DATA!
 
 # Load necessary libraries
@@ -37,12 +38,17 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
     }
 
     # Make a data frame for mapping
-    mapping_df <- data.frame(unlist(as.list(sample_barcodes)), unlist(sample_ids))
+    mapping_df <- data.frame(
+      unlist(as.list(sample_barcodes)),
+      unlist(sample_ids)
+    )
     colnames(mapping_df) <- c("sample_barcode", "sample_ids")
 
     # Join the two data frames based on matching Barcodes
-    mapfile <- left_join(data, mapping_df,
-                        by = c("Tumor_Sample_Barcode" = "sample_barcode"))
+    mapfile <- left_join(
+      data, mapping_df,
+      by = c("Tumor_Sample_Barcode" = "sample_barcode")
+    )
 
     cat("Converting completed.\n")
 
@@ -95,6 +101,7 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
     cat("Writing output file...\n")
     # Write file
     write_tsv(mapfile, "data/pgx_import.tsv")
-}} else {
-  cat('No Tumor_Sample_UUID found. Please check your input file.\n')
+  }
+} else {
+  cat("No Tumor_Sample_UUID found. Please check your input file.\n")
 }
