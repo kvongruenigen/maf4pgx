@@ -39,16 +39,16 @@
 # - cnv variants
 # - snv variants
 
-assign(".Last",  function() {
-                             system("R")}, envir = globalenv())
-quit(save = "no")
+# assign(".Last",  function() {
+#                              system("R")}, envir = globalenv())
+# quit(save = "no")
 ################################################################################
 #                         Let's start                                          #
 ################################################################################
 
 # Prepare ----------------------------------------------------------------------
 rm(list = ls())
-setwd("/Users/kayvongrunigen/Projects/snpettes/data")
+setwd("/Users/kayvongrunigen/Projects/maf4pgx/data")
 
 library(tidyverse)
 library(ggplot2)
@@ -109,7 +109,6 @@ individuals$stage <- as.factor(individuals$stage)
 
 summary(individuals)
 
-individuals$external_references[1]
 ## Table 1 ---------------------------------------------------------------------
 table1 <- individuals %>%
   select(c(sex, birthyear, age_at_diagnosis, stage,
@@ -120,6 +119,7 @@ table1 <- CreateTableOne(data = table1)
 ## Why is days_to_death different from survival_time_days?
 ## survival_time_days is derived from days_to_death -> take days_to_death
 
+# Table to latex format
 ptable1 <- print(table1, printToggle = FALSE, noSpaces = TRUE)
 kable(ptable1, format = "latex")
 
@@ -189,6 +189,7 @@ kable(ptable1, format = "latex")
 ggplot(meta_data, aes(stage)) +
   geom_bar(fill = "lightblue", col = "black") +
   labs(title = "Stage", x = "", y = "Count") +
+  coord_flip() +
   mytheme
 
 substages <- meta_data %>%
@@ -199,6 +200,7 @@ substages <- meta_data %>%
 ggplot(substages, aes(stage)) +
   geom_bar(aes(fill = substage), col = "black") +
   labs(title = "Substage", x = "", y = "Count") +
+  coord_flip() +
   mytheme
 
 ### Sample site ----------------------------------------------------------------
@@ -218,9 +220,11 @@ meta_data$tumor_type <- factor(
   levels = names(sort(table(meta_data$tumor_type), decreasing = TRUE))
 )
 
+table(meta_data$tumor_type)
+
 ggplot(meta_data, aes(tumor_type)) +
   geom_bar(fill = "lightblue", col = "black") +
-  labs(title = "Tumor Type", x = "", y = "Count") +
+  labs(title = "Tumor Type", x = "", y = "Samples (log)") +
   scale_y_log10() +
   mytheme
 

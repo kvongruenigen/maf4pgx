@@ -1,0 +1,63 @@
+---
+title: "Results"
+output:
+  quarto::html_document:
+    toc: true
+editor:
+  render-on-save: true
+---
+
+# Study poulation
+
+```{r, Prep}
+# Prepare ----------------------------------------------------------------------
+rm(list = ls())
+setwd("/Users/kayvongrunigen/Projects/maf4pgx/data")
+
+library(tidyverse)
+library(ggplot2)
+library(ggmap)
+library(ggpubr)
+library(ggfortify)
+library(GGally)
+library(lubridate)
+library(scales)
+library(svglite)
+library(tableone)
+library(survival)
+library(gt)
+library(kableExtra)
+
+# Themes for graphs
+mytheme <-   theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5, size = 16),
+        plot.subtitle = element_text(hjust = 0.5, face = "italic", size = 14),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 12),
+        axis.text.y = element_text(size = 12),
+        axis.title = element_text(size = 14))
+
+poster_theme <-   theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5, size = 28),
+        plot.subtitle = element_text(hjust = 0.5, face = "italic", size = 26),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title = element_text(size = 26))
+```
+
+```{r}
+# Individuals ------------------------------------------------------------------
+individuals <- read_csv("progenetix/progenetix_tcga_individuals_data.csv")
+
+# Variables:
+dput(names(individuals))
+
+
+# Converting strings to factors
+individuals$vital_status <- as.factor(individuals$vital_status)
+individuals$sex <- as.factor(individuals$sex)
+individuals$ethnicity <- as.factor(individuals$ethnicity)
+## Stage from biosamples is more detailed
+individuals$stage <- as.factor(individuals$stage)
+
+summary(individuals)
+```
