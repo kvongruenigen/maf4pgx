@@ -1,6 +1,22 @@
-# Preparation for variant import to progenetix
+#! /usr/bin/env python3
 
-#####################################################################
+###############################################################################
+# Preparation for variant import to progenetix
+# - Rename columns
+# - Create variant_id placeholder
+# - Change chromosome naming convention
+# - Change reference sequence and sequence "-" to "__None__"
+# - Change variant type naming convention (SNV, MNV, DEL, INS)
+# - Add sequence ontologies
+# - Convert coordinate system from 1-based to 0-based
+# - Generate callset_ids per aliquot for import
+# - Map sample_id to biosample_id and individual_id
+# - Create legacy ids / external references
+
+# Outputs: 
+# - data/varImport.tsv -> Variants ready for import
+# - data/matching_maf_data_curated.csv -> MAF data with matching biosample
+###############################################################################
 
 import os
 import pandas as pd
@@ -17,17 +33,24 @@ bs = db.biosamples
 # Read the data frame
 maf_data = pd.read_csv("data/pgx_import.tsv", sep = "\t",
     header = 0, low_memory = False)
-maf_data.columns = maf_data.columns.str.lower()
 
 print("Preparation for mapping...")
 
 # Create placeholder for variant id, gets created while import
 maf_data["variant_id"] = [" "] * len(maf_data)
 
+# Rename columns
+maf_data.rename(columns={"Variant_Type": "variant_type",
+                         "Start_Position": "start",
+                         "End_Position": "end",
+                         "Reference_Allele": "reference_sequence",
+                         "Tumor_Seq_Allele2": "sequence",
+                         "Chromosome": "chromosome",}, inplace=True)
+
 # Naming convention from progenetix
-maf_data["reference_name"] = maf_data["chromosome"].str.slice(start=3)
-maf_data.loc[maf_data["reference_sequence"] == "-", "reference_sequence"] = "None"
-maf_data.loc[maf_data["sequence"] == "-", "sequence"] = "None"
+maf_data["chromosome"] = maf_data["chromosome"].str.slice(start=3)
+maf_data.loc[maf_data["reference_sequence"] == "-", "reference_sequence"] = "__None__"
+maf_data.loc[maf_data["sequence"] == "-", "sequence"] = "__None__"
 
 
 
@@ -79,18 +102,27 @@ maf_data["sample_id"] = "pgx:TCGA." + maf_data["sample_id"]
 
 print("Mapping completed\nWriting files...")
 
+# Replace empty strings with NaN
 maf_data = maf_data.replace("", np.nan)
 
+# Drop unnecessary columns
+drop = ["Tumor_Seq_Allele1", "Matched_Norm_Sample_Barcode", "Matched_Norm_Sample_UUID",
+        "Allele", "normal_bam_uuid", "tumor_bam_uuid",]
+maf_data.drop(drop, axis=1, inplace=True)
+
+# Select only matched variants
 matching_maf_data = maf_data.dropna(subset = ["biosample_id"])
-# Clean up
+
+# Create import file
 import_variants = matching_maf_data[["biosample_id", "variant_id", "callset_id", "individual_id",
-    "reference_name", "start", "end", "reference_sequence",
+    "chromosome", "start", "end", "reference_sequence",
     "sequence", "variant_classification", "variant_state_id",
     "specific_so", "case_id", "sample_id", "variant_type"]]
 
 # Write finished mapping file
 os.makedirs("data/", exist_ok = True) # Check for the directory
 import_variants.to_csv("data/varImport.tsv", sep = "\t", index = False)  # and create .tsv file in the directory
-matching_maf_data.to_csv("data/matching_maf_data_curated.csv")  # and create .tsv file in the directory
+matching_maf_data.to_csv("data/matching_maf_data_curated.csv", index = False)  # and create .tsv file in the directory
+print("Removed " + str(len(maf_data) - len(matching_maf_data)) + " variants without matching biosample.")
 
 print("Done.\n- Variants ready for import: data/varImport.tsv")

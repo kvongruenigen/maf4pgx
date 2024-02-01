@@ -1,14 +1,17 @@
+#! /usr/bin/env python3
+
+###############################################################################
 # Data extraction from MAF files
 # All information will be stored at data/maf_data.csv
+###############################################################################
 
-##############################################################################
 import os
 import pandas as pd
 import numpy as np
 import glob
 from tqdm import tqdm
 
-# Extract data from MAF files ################################################
+# Extract data from MAF files #################################################
 # Create a dataframe and a list for the MAF data
 combined_data = pd.DataFrame()
 df_list = []
@@ -28,7 +31,10 @@ for file in tqdm(glob.glob("data/maf/*.maf"), desc="Extraction progress"):
     
     if has_comments:
         # Skip commented rows
-        maf_data = pd.read_csv(file, sep="\t", skiprows=lambda x: x < 7 or lines[x].startswith("#"), header=0, low_memory=False)
+        maf_data = pd.read_csv(
+            file, sep="\t", header=0, low_memory=False,
+            skiprows=lambda x: x < 7 or lines[x].startswith("#")
+            )
     else:
         # No comments, directly read the file
         maf_data = pd.read_csv(file, sep="\t", header=0, low_memory=False)
@@ -39,7 +45,7 @@ for file in tqdm(glob.glob("data/maf/*.maf"), desc="Extraction progress"):
 combined_data = pd.concat(df_list).reset_index(drop=True)
 print("Data extraction completed.")
 
-# Removing empty columns #####################################################
+# Removing empty columns ######################################################
 
 print("Removing empty columns...")
 

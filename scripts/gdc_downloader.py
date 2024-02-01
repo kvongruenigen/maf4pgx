@@ -1,8 +1,9 @@
+#! /usr/bin/env python3
+
 ###############################################################################
-
 # Downloading masked somatic mutation files from the TCGA program of GDC
-# Results in the download of all unrestricted MAF files 
-
+# Results in the download of all unrestricted MAF files from TCGA
+# All files downloaded will be stored at data/maf/
 ###############################################################################
 import requests
 import json

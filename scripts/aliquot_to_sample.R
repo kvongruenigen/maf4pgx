@@ -1,7 +1,11 @@
+#!/usr/bin/env Rscript
+
+###############################################################################
+# Title: aliquot_to_sample.R
 # Aliquot to sample conversion
-# This script converts the aliquot barcodes to
-# sample UUIDs with the package TCGAutils.
+# This script converts the aliquot barcodes to sample UUIDs
 # ONLY FOR TCGA DATA!
+###############################################################################
 
 # Load necessary libraries
 suppressPackageStartupMessages(library(tidyverse))
@@ -11,43 +15,35 @@ cat("Loading data...\n")
 data <- read_csv("data/maf_data_duplicates_removed.csv", show_col_types = FALSE)
 
 if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
-  # Information to be extracted for variant import
-  data <- data %>% select(c("Tumor_Sample_UUID",
-                            "case_id", "Chromosome",
-                            "Start_Position", "End_Position",
-                            "Variant_Classification", "Variant_Type",
-                            "Reference_Allele", "Tumor_Seq_Allele2",
-                            "Tumor_Sample_Barcode"))
 
+  # If barcode longer than 16 characters then it is an aliquot barcode
   if (nchar(data$Tumor_Sample_Barcode[1]) > 16) {
     data$aliquot_barcode <- data$Tumor_Sample_Barcode
-    data$Tumor_Sample_Barcode <- substr(data$Tumor_Sample_Barcode, 1, 16)
 
-
-    sample_barcodes <- unique(data["Tumor_Sample_Barcode"])
+    sample_barcodes <- unique(data["sample_barcode"])
 
     # Create an empty list for the ids
-    sample_ids <- list()
+    sample_id <- list()
 
     # Convert barcodes into ids
     cat("Converting barcode to sample UUID...\n")
     for (id in sample_barcodes){
       sam <- barcodeToUUID(id)
-      sam <- sam$sample_ids
-      sample_ids <- c(sample_ids, sam)
+      sam <- sam$sample_id
+      sample_id <- c(sample_id, sam)
     }
 
     # Make a data frame for mapping
     mapping_df <- data.frame(
       unlist(as.list(sample_barcodes)),
-      unlist(sample_ids)
+      unlist(sample_id)
     )
-    colnames(mapping_df) <- c("sample_barcode", "sample_ids")
+    colnames(mapping_df) <- c("sample_barcode", "sample_id")
 
     # Join the two data frames based on matching Barcodes
     mapfile <- left_join(
       data, mapping_df,
-      by = c("Tumor_Sample_Barcode" = "sample_barcode")
+      by = c("sample_barcode" = "sample_barcode")
     )
 
     cat("Converting completed.\n")
@@ -66,15 +62,7 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
         variant_type = Variant_Type,
         reference_sequence = Reference_Allele,
         sequence = Tumor_Seq_Allele2,
-        sample_barcode = Tumor_Sample_Barcode,
-        sample_id = sample_ids
       )
-
-    # Select needed columns and rearrange
-    mapfile <- mapfile %>% select(case_id, sample_id, aliquot_id,
-                                  chromosome, start, end,
-                                  variant_classification, variant_type,
-                                  reference_sequence, sequence)
 
     cat("Writing output file...\n")
     # Write file
@@ -96,7 +84,6 @@ if ("Tumor_Sample_UUID" %in% colnames(data) == TRUE) {
         reference_sequence = Reference_Allele,
         sequence = Tumor_Seq_Allele2,
         sample_barcode = Tumor_Sample_Barcode,
-        sample_id = sample_ids
       )
     cat("Writing output file...\n")
     # Write file
