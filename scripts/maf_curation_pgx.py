@@ -114,10 +114,16 @@ maf_data.drop(drop, axis=1, inplace=True)
 matching_maf_data = maf_data.dropna(subset = ["biosample_id"])
 
 # Create import file
-import_variants = matching_maf_data[["biosample_id", "variant_id", "callset_id", "individual_id",
-    "chromosome", "start", "end", "reference_sequence",
-    "sequence", "variant_classification", "variant_state_id",
-    "specific_so", "case_id", "sample_id", "variant_type"]]
+import_variants = matching_maf_data[[
+    "biosample_id", "variant_id", "callset_id", "individual_id",
+    "chromosome", "start", "end", "reference_sequence", "sequence",
+    "variant_classification", "specific_so", "case_id", "sample_id",
+    "variant_type"]]
+
+import_variants.rename(columns={
+    "chromosome": "reference_name",
+    "specific_so": "variant_state_id",
+    }, inplace=True)
 
 # Write finished mapping file
 os.makedirs("data/", exist_ok = True) # Check for the directory
