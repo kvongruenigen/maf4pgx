@@ -10,9 +10,9 @@ import pandas as pd
 # Connect to MongoDB
 client = MongoClient()
 db = client.progenetix
-variantsCollection = db.variants
+variants_collection = db.variants
 
-maf_master = pd.read_csv("../data/maf_master.csv")
+maf_master = pd.read_csv("../data/maf_master.csv", low_memory=False)
 
 for _, variant in maf_master.iterrows():
     chromosome = variant["chromosome"]
@@ -24,7 +24,9 @@ for _, variant in maf_master.iterrows():
 
     if any(pd.isna(value) for value in [chromosome, start, stop, ref, alt]):
         continue
-
+    
+    if variants_collection.count_documents(query) == 0:
+        continue
     query = {
           "location.chromosome": chromosome,
           "location.start": start,
@@ -65,4 +67,4 @@ for _, variant in maf_master.iterrows():
     variant_obj = {k: v for k, v in variant_obj.items() if v is not None}
 
     # Update the variant
-    variantsCollection.update_many(query, {"$set": variant_obj}, upsert=False)
+    variants_collection.update_many(query, {"$set": variant_obj}, upsert=False)
