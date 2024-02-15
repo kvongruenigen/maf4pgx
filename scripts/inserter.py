@@ -13,7 +13,7 @@ import ast
 # Connect to MongoDB
 client = MongoClient()
 db = client.progenetix
-variantsCollection = db.variants
+variants_collection = db.variants
 
 print("Loading data...")
 maf_master = pd.read_csv("data/maf_master.csv", low_memory=False, dtype={
@@ -82,7 +82,8 @@ for _, variant in tqdm(maf_master.iterrows(), total=maf_master.shape[0]):
     }
 
     # Convert string representations of lists to actual lists
-    for key in ["proteinHGVS_ids", "transcriptHGVS_ids", "variant_alternative_ids", "aminoacid_changes", "gene_ids", "molecular_effects"]:
+    for key in ["proteinHGVS_ids", "transcriptHGVS_ids", "variant_alternative_ids",
+                "clinvar_ids", "aminoacid_changes", "gene_ids", "molecular_effects"]:
         if key in variant_obj["identifiers"]:
             variant_obj["identifiers"][key] = ast.literal_eval(variant_obj["identifiers"][key])
 
@@ -103,7 +104,7 @@ for _, variant in tqdm(maf_master.iterrows(), total=maf_master.shape[0]):
 # Execute bulk write operations
 print("Inserting data...")
 if bulk_operations:
-    result = variantsCollection.bulk_write(bulk_operations)
+    result = variants_collection.bulk_write(bulk_operations)
     print("Annotations inserted successfully")
     print("Matched", result.bulk_api_result["nMatched"], "variants")
     print("Modified", result.bulk_api_result["nModified"], "variants")

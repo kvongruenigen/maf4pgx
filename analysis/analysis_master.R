@@ -10,32 +10,10 @@
 # To Dos:
 # - Affected genes
 # - Gene length normalization
-# - ClinVar data for CNVs
-# - PROBLEM!! INS and DEL are not handled correctly
-#   - INS are missing sequence
-#   - DEL are missing completly
+# - Distinguish CNV DEL from SNV DEL
 
-# Missing in database:
-# - Variant Type
-# - Variant Classification
-# - Affected genes already in MAF data
-
-# Possible from MAF:
-# - Variant Type
-# - Variant Classification
-# - SYMBOL (Affected genes)
-# - IMPACT
-# - CANONICAL
-# - BIOTYPE
-# - Consequence
-# (- CLIN_SIG)
-# (- SIFT)
-# (- PolyPhen)
-
-
-# There are 4 data sets:
-# - individuals
-# - biosamples
+# There are 3 data sets:
+# - metadata (individuals + biosamples)
 # - cnv variants
 # - snv variants
 
@@ -81,37 +59,49 @@ poster_theme <-   theme_classic() +
 
 # Study population -------------------------------------------------------------
 
-# Individuals ------------------------------------------------------------------
-individuals <- read_csv("progenetix/progenetix_tcga_individuals_data.csv")
+# Load data
+metadata <- read_csv("progenetix/progenetix_tcga_individuals_biosamples_combined_data.csv")
+
+# Sort columns in alphabetical order
+metadata <- metadata[, order(names(metadata))]
+
+# Convert multiple columns to factors
+metadata <- metadata %>%
+  mutate_at(vars(stage, substage, histological_diagnosis, icdo_morphology,
+                 icdo_topography, sample_origin, tumor_type, project,
+                 vital_status, sex, ethnicity),
+            as.factor)
 
 # Variables:
-dput(names(individuals))
-# updated
-# individual_id
-# days_to_death
-# birthyear
-# vital_status
-# sex
-# external_references
-# disease
-# stage
-# survival_time_days
-# ethnicity
+dput(names(metadata))
 # age_at_diagnosis
+# biosample_id
+# birth_year
+# callset_ids
+# collection_moment_years
+# days_to_death
+# disease
+# ethnicity
 # followup_time_months
+# histological_diagnosis
+# icdo_morphology
+# icdo_topography
+# individual_id
+# project
+# sample_origin
+# sex
+# stage
+# substage
+# tumor_type
+# updated
+# vital_status
 
-# Converting strings to factors
-individuals$vital_status <- as.factor(individuals$vital_status)
-individuals$sex <- as.factor(individuals$sex)
-individuals$ethnicity <- as.factor(individuals$ethnicity)
-## Stage from biosamples is more detailed
-individuals$stage <- as.factor(individuals$stage)
+summary(metadata)
 
-summary(individuals)
 
 ## Table 1 ---------------------------------------------------------------------
-table1 <- individuals %>%
-  select(c(sex, birthyear, age_at_diagnosis, stage,
+table1 <- metadata %>%
+  select(c(sex, birth_year, age_at_diagnosis, stage,
            ethnicity, vital_status,
            days_to_death, followup_time_months))
 
@@ -119,156 +109,107 @@ table1 <- CreateTableOne(data = table1)
 ## Why is days_to_death different from survival_time_days?
 ## survival_time_days is derived from days_to_death -> take days_to_death
 
-# Table to latex format
 ptable1 <- print(table1, printToggle = FALSE, noSpaces = TRUE)
 kable(ptable1, format = "latex")
 
-# Biosamples -------------------------------------------------------------------
-biosamples <- read_csv("progenetix/progenetix_tcga_biosamples_data.csv")
-
-# Variables:
-dput(names(biosamples))
-# "individual_id"
-# "substage"
-# "callset_ids"
-# "biosample_id"
-# "histological_diagnosis"
-# "icdo_morphology"
-# "icdo_topography"
-# "tumor_type"
-# "sample_origin"
-# "collection_moment_years"
-# "project"
-# "stage"
-
-# Converting strings to factors
-biosamples$substage <- as.factor(biosamples$substage)
-biosamples$stage <- as.factor(biosamples$stage)
-biosamples$histological_diagnosis <- as.factor(biosamples$histological_diagnosis) # nolint: line_length_linter.
-biosamples$icdo_morphology <- as.factor(biosamples$icdo_morphology)
-biosamples$icdo_topography <- as.factor(biosamples$icdo_topography)
-biosamples$sample_origin <- as.factor(biosamples$sample_origin)
-biosamples$tumor_type <- as.factor(biosamples$tumor_type)
-biosamples$project <- as.factor(biosamples$project)
-
-summary(biosamples)
 
 ## Table 2 ---------------------------------------------------------------------
-table2 <- biosamples %>%
+table2 <- metadata %>%
   select(c(substage, histological_diagnosis, icdo_morphology,
            icdo_topography, sample_origin, tumor_type, collection_moment_years))
 ## sample_origin, icdo_topography, icdo_morphology,
 ## histologicals_diagnosis too long
 
-table2 <- biosamples %>%
+table2 <- metadata %>%
   select(c(substage, tumor_type, collection_moment_years, project))
 
 CreateTableOne(data = table2)
 
-# Biosamples + Individuals -----------------------------------------------------
-individuals <- individuals %>%
-  select(-c(stage))
-meta_data <- merge(biosamples, individuals, by = "individual_id")
 
 ## Table -----------------------------------------------------------------------
-table <- meta_data %>%
-  select(c(sex, birthyear, age_at_diagnosis, stage,
+table <- metadata %>%
+  select(c(sex, birth_year, age_at_diagnosis, stage,
            ethnicity, vital_status,
            days_to_death, followup_time_months, project))
 
 table1 <- CreateTableOne(data = table)
-## Why is days_to_death different from survival_time_days?
-## survival_time_days is derived from days_to_death -> take days_to_death
 
 ptable1 <- print(table1, printToggle = FALSE, noSpaces = TRUE)
 kable(ptable1, format = "latex")
 # table2 <- CreateTableOne(data = table, strata = c("project"))
+
+
 ## Barcharts -------------------------------------------------------------------
 
+
+
 ### Stage ----------------------------------------------------------------------
-ggplot(meta_data, aes(stage)) +
+
+# Stage Bar Chart
+ggplot(metadata, aes(stage)) +
   geom_bar(fill = "lightblue", col = "black") +
   labs(title = "Stage", x = "", y = "Count") +
-  coord_flip() +
   mytheme
 
-substages <- meta_data %>%
+# Substage Table
+substages <- metadata %>%
   select(c(stage, substage)) %>%
   filter(stage != "Stage Unknown", stage != "Stage X",
          stage != "Stage 0", stage != "Stage I/II NOS")
 
+# Substage Bar Chart --- Don't like the legend
 ggplot(substages, aes(stage)) +
   geom_bar(aes(fill = substage), col = "black") +
   labs(title = "Substage", x = "", y = "Count") +
-  coord_flip() +
   mytheme
 
 ### Sample site ----------------------------------------------------------------
 # TBC
-ggplot(meta_data, aes(sample_origin)) +
+ggplot(metadata, aes(sample_origin)) +
   geom_bar(fill = "lightblue", col = "black") +
   labs(x = "", y = "Count", title = "Sample sites") +
   mytheme
 
-unique(meta_data$sample_origin)
+unique(metadata$sample_origin)
 
 ### Tumor type -----------------------------------------------------------------
-levels(meta_data$tumor_type) <- c("New Primary", "Metastatic", "Primary Blood",
+levels(metadata$tumor_type) <- c("New Primary", "Metastatic", "Primary Blood",
                                   "Primary Tumor", "Recurrent Tumor")
-meta_data$tumor_type <- factor(
-  meta_data$tumor_type,
-  levels = names(sort(table(meta_data$tumor_type), decreasing = TRUE))
+metadata$tumor_type <- factor(
+  metadata$tumor_type,
+  levels = names(sort(table(metadata$tumor_type), decreasing = TRUE))
 )
 
-table(meta_data$tumor_type)
-
-ggplot(meta_data, aes(tumor_type)) +
+ggplot(metadata, aes(tumor_type)) +
   geom_bar(fill = "lightblue", col = "black") +
-  labs(title = "Tumor Type", x = "", y = "Samples (log)") +
+  labs(title = "Tumor Type", x = "", y = "Count") +
   scale_y_log10() +
   mytheme
 
 ### Project --------------------------------------------------------------------
-# Remove "TCGA" and "project" from project names
-meta_data$project <- gsub("TCGA ", "", meta_data$project)
-meta_data$project <- gsub(" project", "", meta_data$project)
+# # Remove "TCGA" and "project" from project names
+# metadata$project <- gsub("TCGA ", "", metadata$project)
+# metadata$project <- gsub(" project", "", metadata$project)
 
-#Filter the unique individuals
-unique_individuals <- meta_data[!duplicated(meta_data$individual_id), ]
+# Filter the unique individuals
+unique_individuals <- metadata[!duplicated(metadata$individual_id), ]
 
 # Sort the projects by number of individuals
 individuals_project <- factor(
   unique_individuals$project,
-  levels = names(sort(table(meta_data$project), decreasing = FALSE))
+  levels = names(sort(table(metadata$project), decreasing = FALSE))
 )
 
-# Plot
-project_barchart <- ggplot(meta_data, aes(project)) +
+# Plot the sorted projects
+ggplot(unique_individuals, aes(individuals_project)) +
   geom_bar(fill = "lightblue", col = "black") +
   labs(title = "TCGA projects", x = "", y = "Individuals") +
   coord_flip() +
   mytheme
 
 table(unique_individuals$project)
+unique(metadata$project)
 
-# CNV variants -----------------------------------------------------------------
-cnvs <- read_csv("progenetix/progenetix_tcga_cnv_variants_data_with_genes.csv")
-
-# Variables:
-dput(names(cnvs))
-
-sumary(cnvs)
-
-# Sequence Alterations ---------------------------------------------------------
-snv_variants <- read_csv("data/matching_maf_data_curated.csv")
-
-# Story telling ----------------------------------------------------------------
-ggplot(meta_data, aes(project)) +
-  geom_bar(fill = "lightblue", col = "black") +
-  labs(title = "TCGA projects", x = "", y = "Individuals") +
-  coord_flip() +
-  mytheme
-unique(meta_data$project)
 # ct_legend <- list(
 #   "ACC" = "Adrenocortical carcinoma",
 #   "BLCA" = "Bladder Urothelial Carcinoma",
@@ -304,3 +245,80 @@ unique(meta_data$project)
 #   "UCS" = "Uterine Carcinosarcoma",
 #   "UVM" = "Uveal Melanoma"
 # )
+
+# CNV variants -----------------------------------------------------------------
+cnvs <- read_csv("progenetix/progenetix_tcga_cnv_variants_data_with_genes.csv")
+
+cnvs <- cnvs[, order(names(cnvs))]
+
+# Convert multiple columns to factors
+cnvs <- cnvs %>%
+  mutate_at(vars(chromosome, cnv_state, relative_copy_class, variant_state),
+            as.factor)
+
+# Variables:
+dput(names(cnvs))
+# "affected_genes"
+# "biosample_id"
+# "callset_id"
+# "chromosome"
+# "cnv_state"
+# "cnv_value"
+# "cnvfraction"
+# "delfraction"
+# "dupfraction"
+# "end"
+# "individual_id"
+# "relative_copy_class"
+# "start"
+# "updated"
+# "variant_id"
+# "variant_internal_id"
+# "variant_length"
+# "variant_state"
+
+summary(cnvs)
+
+# Sequence Alterations ---------------------------------------------------------
+snvs <- read_csv("maf_analysis_data.csv")
+
+# Set all columns to lower case
+names(snvs) <- tolower(names(snvs))
+
+# Rename column Hugo_Symbol to gene
+names(snvs)[names(snvs) == "hugo_symbol"] <- "gene"
+
+# Order columns alphabetically
+snvs <- snvs[, order(names(snvs))]
+
+# Convert multiple columns to factors
+snvs <- snvs %>%
+  mutate_at(vars(biotype, canonical, center, chromosome, clin_sig, gene, hotspot,
+                 impact, mirna, one_consequence, variant_classification,
+                 variant_type),
+            as.factor)
+
+# Variables:
+dput(names(snvs))
+
+summary(snvs)
+
+# TO-DOS:
+# - How to handle list information in R?
+# - aminoacid_changes: Extract list info
+# - clinical_interpretations: Extract list info
+# - consequence: Extract list info
+
+
+# Aminoacid changes
+unique(snvs$consequence)
+
+# Story telling ----------------------------------------------------------------
+
+# Sorted projects
+ggplot(unique_individuals, aes(individuals_project)) +
+  geom_bar(fill = "lightblue", col = "black") +
+  labs(title = "TCGA projects", x = "", y = "Individuals") +
+  coord_flip() +
+  mytheme
+

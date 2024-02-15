@@ -6,3 +6,4 @@ backup_mapped_variants.json
 *.svg
 *.pdf
 *.png
+.Rproj.user
