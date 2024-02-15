@@ -7,12 +7,9 @@ editor:
   render-on-save: true
 ---
 
-# Study poulation
-
-```{r, Prep}
+```{r, Prepare, include=FALSE}
 # Prepare ----------------------------------------------------------------------
 rm(list = ls())
-setwd("/Users/kayvongrunigen/Projects/maf4pgx/data")
 
 library(tidyverse)
 library(ggplot2)
@@ -44,9 +41,11 @@ poster_theme <-   theme_classic() +
         axis.title = element_text(size = 26))
 ```
 
-```{r}
+# Study poulation
+## Individuals
+```{r, Indiciduals, echo=FALSE}
 # Individuals ------------------------------------------------------------------
-individuals <- read_csv("progenetix/progenetix_tcga_individuals_data.csv")
+individuals <- read_csv("../data/progenetix/progenetix_tcga_individuals_data.csv")
 
 # Variables:
 dput(names(individuals))

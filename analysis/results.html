@@ -60,7 +60,73 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>Why doesn’t it render on save</p>
+<section id="study-poulation" class="level1">
+<h1>Study poulation</h1>
+<section id="individuals" class="level2">
+<h2 class="anchored" data-anchor-id="individuals">Individuals</h2>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 9893 Columns: 13
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (7): vital_status, individual_id, sex, external_references, disease, st...
+dbl  (5): birthyear, days_to_death, survival_time_days, age_at_diagnosis, fo...
+dttm (1): updated
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>c("vital_status", "birthyear", "days_to_death", "individual_id", 
+"updated", "sex", "external_references", "survival_time_days", 
+"disease", "stage", "ethnicity", "age_at_diagnosis", "followup_time_months"
+)</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       vital_status    birthyear    days_to_death     individual_id     
+ alive       :6892   Min.   :1902   Min.   :    0.0   Length:9893       
+ dead        :2999   1st Qu.:1939   1st Qu.:  275.0   Class :character  
+ not reported:   2   Median :1948   Median :  549.5   Mode  :character  
+                     Mean   :1949   Mean   :  863.0                     
+                     3rd Qu.:1958   3rd Qu.: 1097.5                     
+                     Max.   :1997   Max.   :10870.0                     
+                     NA's   :160    NA's   :6921                        
+    updated                                         sex      
+ Min.   :2018-12-04 14:51:56.40   female genotypic sex:5087  
+ 1st Qu.:2018-12-04 14:52:12.24   male genotypic sex  :4806  
+ Median :2018-12-04 14:52:31.67                              
+ Mean   :2018-12-04 14:52:39.16                              
+ 3rd Qu.:2018-12-04 14:53:01.05                              
+ Max.   :2018-12-04 14:54:15.23                              
+                                                             
+ external_references survival_time_days   disease                    stage     
+ Length:9893         Min.   :  -60      Length:9893        Stage Unknown:3574  
+ Class :character    1st Qu.:  363      Class :character   Stage I      :1123  
+ Mode  :character    Median :  726      Mode  :character   Stage IIA    : 737  
+                     Mean   : 1035                         Stage IIB    : 655  
+                     3rd Qu.: 1391                         Stage III    : 633  
+                     Max.   :11132                         Stage II     : 604  
+                     NA's   :5788                          (Other)      :2567  
+                                     ethnicity    age_at_diagnosis
+ american indian or alaska native         :  25   Min.   :14.43   
+ asian                                    : 640   1st Qu.:50.94   
+ black or african american                : 851   Median :60.99   
+ hispanic or latino                       :  36   Mean   :59.72   
+ native hawaiian or other pacific islander:   9   3rd Qu.:70.25   
+ not reported                             :1169   Max.   :90.06   
+ white                                    :7163   NA's   :115     
+ followup_time_months
+ Min.   :  0.00      
+ 1st Qu.: 12.00      
+ Median : 23.00      
+ Mean   : 33.93      
+ 3rd Qu.: 45.00      
+ Max.   :369.00      
+ NA's   :1769        </code></pre>
+</div>
+</div>
+</section>
+</section>
 
 </main>
 <!-- /main column -->

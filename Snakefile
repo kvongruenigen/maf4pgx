@@ -1,13 +1,17 @@
-# This rule executes all the code except the Novel Data Download
+##
+## Making files
+##
+
+# Basic import file
 rule import_file:
 	input:
 		"data/maf_data.csv",
 		"data/maf_data_duplicates_removed.csv",
 		"data/pgx_import.tsv",
 		"data/varImport.tsv",
-		"data/clinvar_variants.json",
 
-rule master_file:
+# All files with annotations
+rule make_files:
 	input:
 		"data/maf_data.csv",
 		"data/maf_data_duplicates_removed.csv",
@@ -16,6 +20,30 @@ rule master_file:
 		"data/clinvar_variants.json",
 		"data/matching_maf_data_curated.csv",
 		"data/maf_master.csv"
+
+##
+## Imports
+##
+
+# For testing purposes
+rule test:
+	input:
+		"data/varImport.tsv"
+	shell:
+		"~/switchdrive/baudisgroup/dbtools/byconaut/bin/variantsInserter.py --test --i data/varImport.tsv"
+# For definite import into the database
+rule pgx_import:
+	input:
+		"data/varImport.tsv"
+	shell:
+		"~/switchdrive/baudisgroup/dbtools/byconaut/bin/variantsInserter.py --i data/varImport.tsv"
+
+# Importing annotation data into the database
+rule annotation_import:
+	input:
+		"data/maf_master.csv"
+	script:
+		"scripts/inserter.py"
 
 ##
 ## Novel Data Download
@@ -66,19 +94,6 @@ rule mapping:
 	script:
 		"scripts/maf_curation_pgx.py"
 
-# For definite import into the database
-rule pgx_import:
-	input:
-		"data/varImport.tsv"
-	shell:
-		"~/switchdrive/baudisgroup/dbtools/byconaut/bin/variantsInserter.py --i data/varImport.tsv"
-
-# For testing purposes
-rule test:
-	input:
-		"data/varImport.tsv"
-	shell:
-		"~/switchdrive/baudisgroup/dbtools/byconaut/bin/variantsInserter.py --test --i data/varImport.tsv"
 
 # ClinVar annotation
 rule clinvar_extraction:
@@ -88,18 +103,11 @@ rule clinvar_extraction:
 		"scripts/clinvar_xml_extractor.py"
 
 # Enhancing MAF data frame
-rule maf_enhancement:
+rule maf_annotation:
 	input:
 		"data/matching_maf_data_curated.csv",
 		"data/clinvar_variants.json"
 	output:
 		"data/maf_master.csv"
 	script:
-		"scripts/enhancer.py"
-
-# Importing annotation data into the database
-rule annotation_import:
-	input:
-		"data/maf_master.csv"
-	script:
-		"scripts/inserter.py"
+		"scripts/annotator.py"
