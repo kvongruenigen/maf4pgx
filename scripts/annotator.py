@@ -105,6 +105,41 @@ def collect_af(df):
         df.at[i, 'frequency_in_populations'] = afs_list
         return df
 
+def geolocation_center(df):
+    center_locations = {
+        "BI": {"city":"Boston",
+            "state": "Massachusetts",
+            "country": "USA",
+            "continent": "North America",
+            "latitude": 42.37,
+            "longitude": -71.09},
+        "WUGSC": {"city":"St. Louis",
+                "state": "Missouri",
+                "country": "USA",
+                "continent": "North America",
+                "latitude": 38.65,
+                "longitude": -90.31,},
+        "BCM": {"city":"Houston",
+                "state": "Texas",
+                "country": "USA",
+                "continent": "North America",
+                "latitude": 29.71,
+                "longitude": -95.40},
+        "SANGER": {"city":"Cambridge",
+                "state": "Cambridgeshire",
+                "country": "UK",
+                "continent": "Europe",
+                "latitude": 52.08,
+                "longitude": 0.18},
+    }
+    df['geolocation'] = np.nan
+    for i, row in df.iterrows():
+        if pd.notna(row['Center']):
+            center = row['Center'].split(';')[0]
+            if center in center_locations:
+                df.at[i, 'geolocation'] = str(center_locations[center])
+    return df
+
 # Load variants matching with data base
 print("Loading data...")
 maf_matches = pd.read_csv("data/matching_maf_data_curated.csv", low_memory=False)
@@ -343,6 +378,11 @@ for i, row in merged_data.iterrows():
                     'effect_ids': ['MedGen:CN517202']
                 })
         merged_data.at[i, 'clinical_interpretations'] = interpretations
+
+# Add geolocation data
+print("Adding geolocation data...")
+geolocation_center(merged_data)
+
 
 # Add allele frequency data
 print("Adding allele frequency data...")

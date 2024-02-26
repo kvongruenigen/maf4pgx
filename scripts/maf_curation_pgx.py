@@ -68,6 +68,9 @@ maf_data.loc[maf_data["variant_type"] == "MNV", "specific_so"] = "SO:0002007"
 maf_data.loc[maf_data["variant_type"] == "DEL", "specific_so"] = "SO:0000159"
 maf_data.loc[maf_data["variant_type"] == "INS", "specific_so"] = "SO:0000667"
 
+# Adding paramater analysis_operation_id & analysis_operation_label
+maf_data["analysis_operation_id"] = "EDAM:operation_3227"
+maf_data["analysis_operation_label"] = "Variant Calling"
 
 # Convert 1-based MAF files to 0-based
 # Explanation @ https://www.biostars.org/p/84686/

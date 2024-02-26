@@ -40,6 +40,7 @@ for _, variant in tqdm(maf_master.iterrows(), total=maf_master.shape[0]):
     ref = variant["reference_sequence"]
     alt = variant["sequence"]
     biosample_id = variant["biosample_id"]
+    geo = eval(variant["geolocation"])
 
     if any(pd.isna(value) for value in [chromosome, start, stop, ref, alt]):
         continue
@@ -79,6 +80,25 @@ for _, variant in tqdm(maf_master.iterrows(), total=maf_master.shape[0]):
         "clinical_interpretations": variant["clinical_interpretations"] if pd.notna(variant["clinical_interpretations"]) else None,
         "frequency_in_populations": variant["frequency_in_populations"] if pd.notna(variant["frequency_in_populations"]) else None,
         "allele_origin": {"id": "SO:0001777","label": "somatic variant"},
+        "geo_location": {
+                "type": "Feature",
+                "geometry": { 
+                    "type": "Point",
+                    "coordinates": [
+                        geo.get("longitude"), geo.get("latitude")
+                        ]
+                },
+                "properties": {
+                    "label": f"{geo.get('city')}, {geo.get('country')}",
+                    "city": geo.get("city"),
+                    "country": geo.get("country"),
+                    "continent": geo.get("continent"),
+                    "latitude": geo.get("latitude"),
+                    "longitude": geo.get("longitude"),
+                    "ISO3166alpha3": geo.get("ISO3166alpha3"),
+                    "precision": "city"
+                }
+            }
     }
 
     # Convert string representations of lists to actual lists
