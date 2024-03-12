@@ -5,8 +5,6 @@
 ###############################################################################
 
 # Import packages #############################################################
-import pandas as pd
-import numpy as np
 import json
 import xml.etree.ElementTree as ET
 import os
@@ -79,6 +77,8 @@ def process_variation(variation_archive):
             return None
     ###########################################################################
     # Variant name and type
+    ###########################################################################
+
     variant_dictionary["variant_name"] = variation_name
     variant_type = variation_archive.get("VariationType")
     variant_dictionary["variant_type"] = variant_type

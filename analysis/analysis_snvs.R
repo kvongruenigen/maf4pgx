@@ -13,7 +13,7 @@
 dput(names(snvs))
 
 # Summary
-summary(snvs)
+str(snvs)
 
 # Explore numerical variables
 numeric_summary_snvs <- snvs %>%
@@ -26,6 +26,16 @@ categorical_summary_snvs <- snvs %>%
   select_if(is.factor) %>%
   summary()
 print(categorical_summary_snvs)
+
+# Split the strings into lists
+snvs <- snvs %>%
+  mutate(clinvar_effect = strsplit(gsub("[{}']", "", clinvar_effects), ", ")) %>%
+  select(-c(clinvar_effects))
+
+snvs <- snvs %>%
+  mutate(clinvar_interpretation = strsplit(gsub("[{}']", "", clinvar_interpretations), ", ")) %>%
+  select(-c(clinvar_interpretations))
+
 
 ## Visual exploration -----------------------------------------------------------
 
@@ -67,6 +77,7 @@ snvs$center <- factor(
   snvs$center,
   levels = names(sort(table(snvs$center), decreasing = FALSE))
 )
+levels(snvs$center)
 
 plot_centers <-
 ggplot(snvs, aes(x = center)) +
@@ -75,7 +86,9 @@ ggplot(snvs, aes(x = center)) +
   coord_flip() +
   scale_y_log10(labels = label_log(digits = 2)) +
   theme_basic +
-  theme(panel.grid.major.x = element_line(color = "gray", linetype = "solid"))
+  theme(panel.grid.major.x = element_line(color = "gray", linetype = "solid")) +
+  geom_text(stat = "count", aes(label = ..count..), hjust = 1.5) +
+  geom_text(stat = "count", aes(label = scales::percent(..count../sum(..count..))), hjust = -0.2)
 plot_centers
 
 ### ClinVar Significance -------------------------------------------------------
@@ -98,7 +111,7 @@ clin_sig_df$Var1 <- factor(clin_sig_df$Var1, levels = clin_sig_df$Var1)
 plot_clin_sig <-
 ggplot(clin_sig_df, aes(x = Var1, y = Freq)) +
   geom_bar(stat = "identity", fill = "lightblue", col="black") +
-  labs(title = "Clinical Significance", x = "Clinical Significance", y = "Variants (log10)") +
+  labs(title = "Clinical Significance", x = "", y = "Variants (log10)") +
   scale_x_discrete(
     labels = c(
       "benign" = "Benign",
@@ -132,7 +145,7 @@ plot_consequences <-
       "missense variant" = "Missense",
       "synonymous variant" = "Synonymous"
   ))+
-  scale_y_continuous(labels = scales::comma_format()) +
+  scale_y_continuous(labels = scales::comma_format(), limits = c(0,2000000)) +
   labs(title = "Most Frequent Consequence Types",
        x = "",
        y = "Variants") +
@@ -143,6 +156,35 @@ plot_consequences <-
   geom_text(stat = "count", aes(label = scales::percent(..count../sum(..count..))), hjust = -0.2)
 plot_consequences
 
+# CONSEQUENCES
+# Split the entries in the clin_sig column
+snvs_filtered <- snvs[!is.na(snvs$consequence), ]
+
+consequence_lists <- strsplit(as.character(snvs_filtered$consequence), ",")
+
+# Count the occurrences of each term
+consequence_lists <- lapply(consequence_lists, function(levels_split) str_trim(levels_split))
+consequence_counts <- table(unlist(consequence_lists))
+
+# Convert the counts to a data frame
+consequence_df <- as.data.frame(consequence_counts)
+consequence_df <- consequence_df[order(consequence_df$Freq), ]  # Order by frequency
+
+# Convert Var1 to a factor with the correct order
+consequence_df$Var1 <- factor(consequence_df$Var1, levels = consequence_df$Var1)
+colnames(consequence_df)[1] <- "consequence"
+print(consequence_df)
+
+# Create a bar plot
+ggplot(consequence_df, aes(x = consequence, y = Freq)) +
+  geom_bar(stat = "identity", fill = "lightblue", col="black") +
+  labs(title = "Consequence Types", x = "", y = "Variants (log10)") +
+  scale_y_log10(labels = label_log(digits = 2)) +
+  theme_basic +
+  coord_flip()+
+  theme(panel.grid.major.x = element_line(color = "gray", linetype = "solid"))+
+  geom_text(stat = "identity", aes(label = scales::percent(Freq/sum(Freq),
+                                   accuracy = 0.1)), hjust = 1.5)
 
 ### Genes ----------------------------------------------------------------------
 # Plot the top 10 mutated genes
@@ -155,6 +197,39 @@ plot_top_mutated_genes <-
   theme_basic +
   theme(panel.grid.major.x = element_line(color = "gray", linetype = "solid"))
 plot_top_mutated_genes
+
+# Show number and percentage for top genes
+top_genes <- snvs %>%
+  count(gene) %>%
+  arrange(desc(n)) %>%
+  top_n(20) %>%
+  mutate(percentage = n / sum(n))
+top_genes
+
+# Show number and percentage for top genes
+top_genes_project <- snvs %>%
+  group_by(project) %>%
+  count(gene) %>%
+  arrange(desc(n)) %>%
+  top_n(20) %>%
+  mutate(percentage = n / sum(n))
+top_genes_project
+
+# Exclude projects with 100 mutations per gene
+top_genes_project_filtered <- top_genes_project %>%
+  filter(n > 200)
+
+# Show top genes per project
+ggplot(top_genes_project_filtered, aes(x = reorder(gene, n), y = n, fill = project)) +
+  geom_bar(stat = "identity", col = 'black') +
+  labs(title = "Top 20 Mutated Genes per Project",
+       x = "Gene",
+       y = "Variants") +
+  scale_y_continuous(labels = scales::comma_format()) +
+  coord_flip() +
+  theme_classic() +
+  theme(panel.grid.major.x = element_line(color = "gray", linetype = "solid")) +
+  theme(legend.position = "bottom")
 
 
 ### Hotspots -------------------------------------------------------------------
@@ -188,7 +263,7 @@ snvs$impact_sorted <- factor(
   snvs$impact,
   levels = names(sort(table(snvs$impact), decreasing = FALSE))
 )
-
+table(snvs$impact)
 # Plot
 plot_impact <- 
   ggplot(snvs, aes(x = factor(impact_sorted))) +
@@ -204,7 +279,7 @@ plot_impact <-
       "HIGH" = "High",
       "MODIFIER" = "Modifier")
     ) +
-  scale_y_log10(labels = label_log(digits = 2)) +
+  scale_y_log10(labels = label_log(digits = 2), limits = c(1,10^7)) +
   theme_basic +
   coord_flip()+
   theme(panel.grid.major.x = element_line(color = "gray", linetype = "solid"))+
@@ -217,6 +292,8 @@ plot_impact
 ### miRNA ---------------------------------------------------------------------
 # Split the entries in the miRNA column
 miRNA_lists <- strsplit(as.character(snvs$mirna), ";")
+
+sum(!is.na(snvs$mirna))
 
 # Count the occurrences of each term
 miRNA_counts <- table(unlist(miRNA_lists))
@@ -244,7 +321,7 @@ plot_mirna
 
 ### Project: Mutation per project ----------------------------------------------
 # Plot the distribution of mutations per project
-# needs sorting
+# Need to adjust by number of samples
 snvs$project <- factor(
   snvs$project,
   levels = names(sort(table(snvs$project), decreasing = FALSE))
@@ -261,6 +338,42 @@ plot_mutations_per_project <-
   theme(panel.grid.major.x = element_line(color = "gray", linetype = "solid"))+
   coord_flip()
 plot_mutations_per_project
+
+
+# Calculate the number of variants per project
+variants_per_project <- snvs %>%
+  group_by(project, biosample_id) %>%
+  summarise(variant_count = n())
+avg_variants <- variants_per_project%>%
+  group_by(project) %>%
+  summarise(avg_variant_count = mean(variant_count))
+
+# Join the calculated averages back to your main dataset
+variants_per_project <- left_join(variants_per_project, avg_variants, by = "project")
+
+# Create a new column for the normalized variant count
+variants_per_project$normalized_variant_count <- variants_per_project$variant_count / variants_per_project$avg_variant_count
+
+# Order the levels of the project factor by the average variant count
+variants_per_project$project <- factor(variants_per_project$project, levels = levels(factor(variants_per_project$project))[order(variants_per_project$avg_variant_count)])
+
+# Create the plot
+plot_mutations_per_project <- 
+  ggplot(variants_per_project, aes(x = project, y = normalized_variant_count)) +
+  geom_bar(stat = "identity", fill = "lightblue", col = "black", na.rm = TRUE) +
+  labs(
+    title = "Normalized Mutations per Project",
+    x = "Project",
+    y = "Normalized Variants (log10)"
+  ) +
+  scale_y_log10(labels = scales::label_log(base = 10)) +
+  theme_minimal() +  # Change the theme if needed
+  theme(panel.grid.major.x = element_line(color = "gray", linetype = "solid")) +
+  coord_flip()
+
+# Display the plot
+print(plot_mutations_per_project)
+
 
 ### PolyPhen -------------------------------------------------------------------
 # Sort
@@ -298,9 +411,13 @@ snvs$sift_sorted <- factor(
   levels = names(sort(table(snvs$sift), decreasing = FALSE))
 )
 
+snvs_filtered <- snvs[!is.na(snvs$sift), ]
+
+
+
 # Plot distribution of SIFT
 plot_sift <-
-ggplot(snvs, aes(x = sift)) +
+ggplot(snvs_filtered, aes(x = sift)) +
   geom_bar(fill = "lightblue", col = "black") +
   labs(
     title = "SIFT",
@@ -329,6 +446,20 @@ ggarrange(
   ncol = 2
 )
 
+### Interpretations table ------------------------------------------------------
+# Count the occurrences of each term for each column
+# clin_sig
+# sift
+# polyphen
+interpretations_table <- snvs %>%
+  select(clin_sig, sift, polyphen) %>%
+  filter(!is.na(clin_sig) & !is.na(sift) & !is.na(polyphen)) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+  mutate(value = strsplit(as.character(value), ";")) %>%
+  unnest(value) %>%
+  group_by(variable, value) %>%
+  summarise(n = n()) %>%
+  arrange(variable, desc(n))
 
 ### Variation Classification ---------------------------------------------------
 # Sort by frequency
@@ -454,3 +585,5 @@ ggarrange(
   ncol = 4, nrow = 5
 )
 plots_snvs_complete
+
+

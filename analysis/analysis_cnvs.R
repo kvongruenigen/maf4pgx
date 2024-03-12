@@ -61,7 +61,7 @@ plot_cnv_state <-
   )) +
   scale_y_continuous(labels = scales::comma_format()) +
   theme_basic +
-  theme(panel.grid.major.y = element_line(color = "gray", linetype = "solid"))
+  theme(panel.grid.major.y = element_line(color = "gray", linetype = "solid")) +
   geom_text(stat = "count", aes(label = ..count..), vjust = -0.5)+
   geom_text(stat = "count", aes(label = scales::percent(..count../sum(..count..))), vjust = 1.5)
 
@@ -78,17 +78,35 @@ plot_cnv_length <-
   theme_basic +
   theme(panel.grid.major.y = element_line(color = "gray", linetype = "solid"))
 # 0-Inflation -> distribution = Poisson / quasi-poisson?
+min(cnvs$variant_length) # 3
+median(cnvs$variant_length) # 1000
+# Show lowest lengths
+cnvs %>%
+  filter(variant_length < 535648) %>%
+  select(variant_length, variant_state) %>%
+  arrange(variant_length)
 
+sum(cnvs$variant_length < 1000) # 152'343
+sum(cnvs$variant_length < 100) # 36'486
+sum(cnvs$variant_length < 10) # 3104
 
-### CNV Values -------------------------------------------------
+sum(cnvs$variant_length != cnvs$end - cnvs$start)
+### CNV Values -----------------------------------------------------------------
+# log ratio of copies in tumor sample compared to normal sample (log(10/1) = 1)
+# CNV threshold of +-0.15
 plot_cnv_values <-
   ggplot(cnvs, aes(x = cnv_value)) +
   geom_histogram(binwidth = 0.1, fill = "lightblue", col = "black") +
-  scale_y_log10(labels = label_log(digits = 2)) +
+  # scale_y_log10(labels = label_log(digits = 2)) +
   labs(title = "CNV Values", x = "", y = "Variants (log10)") +
   theme_basic +
   theme(panel.grid.major.y = element_line(color = "gray", linetype = "solid"))
 
+sum(is.na(cnvs$cnv_value))
+
+# Convert all number to positives
+absolutes <- abs(cnvs$cnv_value)
+min(absolutes) # threshold confirmed
 
 ### Fraction Information --------------------------------------------------------
 plot_cnv_fractions <-
@@ -113,6 +131,9 @@ plot_cnv_fractions <-
     nrow = 2, heights = c(1, 1))
 # Normally distributed
 
+
+
+
 ### CNV Plots ------------------------------------------------------------------
 plots_cnv_complete <-
 ggarrange(
@@ -125,6 +146,8 @@ ggarrange(
   ncol = 1, nrow = 4
 )
 plots_cnv_complete
+
+
 ### Genes ----------------------------------------------------------------------
 class(cnvs$affected_genes)
 

@@ -65,7 +65,126 @@
 
 #'*Orange*
 
-  
+# Colors:
+# https://stackoverflow.com/questions/50321000/r-colors-many-distinctive-colors-that-are-still-pretty
+
+
+## Plot legend seperately ------------------------------------------------------
+# legend <- get_legend(
+#   ggplot(plot.long.data,aes(y=value))+
+#     geom_boxplot(outlier.size=0.15,aes(fill=method))+
+#     scale_fill_manual(values=cols)+ylim(c(0,1))+ylab('F1')
+# )
+
+
+## EDA Recipe: -----------------------------------------------------------------
+# # 1. Independence of Y: Plot Y against time/space variables. (Not really in this data)
+# # 2. Distribution of Y: 
+# #   - Plot Y histogram as density with overlaid distribution
+# #   - Make QQ plots
+# 
+# # Histograms
+# ggarrange(
+#   ggplot(mtcars, aes(disp)) +
+#     geom_histogram(aes(y= ..density..), fill= "white", col= "black") + #density instead of counts
+#     stat_function(fun= dnorm, #function for normal distribution
+#                   args= list(mean(mtcars$disp),# R needs mean
+#                              sd(mtcars$disp)), # and SD
+#                   n= 1e2,
+#                   col= "blue") +
+#     labs(title= "Density histogram",
+#          subtitle= "Gaussian distribution overlaid") +
+#     theme_bw() +
+#     theme(plot.title= element_text(hjust= 0.5),
+#           plot.subtitle= element_text(hjust= 0.5)),
+#   ggplot(mtcars, aes(disp)) +
+#     geom_histogram(aes(y= ..density..), fill= "white", col= "black",
+#                    binwidth= 1) +
+#     stat_function(fun= dpois, # function for Poisson distribution
+#                   args= list(mean(mtcars$disp)),
+#                   n= max(mtcars$disp) - min(mtcars$disp) + 1,
+#                   fill= "blue", col= NA, alpha= .2, geom= "bar") +
+#     labs(title= "Density histogram",
+#          subtitle= "Poisson distribution overlaid") +
+#     theme_bw() +
+#     theme(plot.title= element_text(hjust= 0.5),
+#           plot.subtitle= element_text(hjust= 0.5)),
+#   ncol= 2)
+# 
+# 
+# # QQplots (possible to draw for different distributions)
+# ggarrange(
+#   ggplot(metadata, aes(sample= age_at_diagnosis)) +
+#     stat_qq(distribution= stats::qpois,
+#             dparams= list(lambda= mean(metadata$age_at_diagnosis, na.rm = T))) +
+#     stat_qq_line(distribution= stats::qpois,
+#                  dparams= list(lambda= mean(metadata$age_at_diagnosis, na.rm = T)), col= "red") +
+#     labs(x= "Theoretical quantiles (Poisson)", y= "Sample Quantiles") +
+#     theme_bw(),
+#   ggplot(metadata, aes(sample= age_at_diagnosis)) +
+#     stat_qq() +
+#     stat_qq_line(col= "red") +
+#     labs(x= "Theoretical quantiles (Gaussian)", y= "Sample Quantiles") +
+#     theme_bw(),
+#   ncol= 2)
+# 
+# # 3. Homogeneity of Y: scatterplots and conditional boxplots (use facet_wrap)
+# # Across the covariate
+# ggplot(owls, aes(ArrivalTime, NCalls)) +
+#   geom_point() +
+#   facet_grid(FoodTreatment~ SexParent) +
+#   theme_bw()
+# 
+# # For each of the categorical predictor combinations, e.g.
+# ggplot(owls, aes(FoodTreatment, NCalls)) +
+#   geom_boxplot(fill= "lightgrey") +
+#   facet_wrap(~ SexParent) +
+#   theme_bw()
+# 
+# # 4. Outliers in Y and X: Boxplots and Cleveland dotplots
+# ggarrange(
+#   ggplot(owls, aes(y= NCalls)) +
+#     geom_boxplot(fill= "lightgrey") +
+#     labs(x= "", y= "Number of Calls") +
+#     theme_bw() +
+#     theme(axis.text.x= element_text(colour= NA),
+#           axis.ticks.x= element_blank()),
+#   ggplot(owls, aes(x= 1:nrow(owls), y= NCalls)) +
+#     geom_point(alpha= .2) +
+#     labs(x= "Order of the data", y= "Number of Calls") +
+#     theme_bw(),
+#   ggplot(owls, aes(y= ArrivalTime)) +
+#     geom_boxplot(fill= "lightgrey") +
+#     labs(x= "", y= "Arrival time") +
+#     theme_bw() +
+#     theme(axis.text.x= element_text(colour= NA),
+#           axis.ticks.x= element_blank()),
+#   ggplot(owls, aes(x= 1:nrow(owls), y= ArrivalTime)) +
+#     geom_point(alpha= .2) +
+#     labs(x= "Order of the data", y= "Arrival time") +
+#     theme_bw(),
+#   ncol= 2, nrow= 2)
+# 
+# ## v) Relationships among Y and X 
+# ##    (entails the "Collinearity X", "Relationships Y & X" and "Interactions"
+# ##    steps in the Zuur et al 2010 protocol; scatterplots, coplots and boxplots)
+# 
+# # Scatterplot-matrix (both functions here are highly customizable)
+# # Default
+# ggpairs(metadata, columns = c("age_at_diagnosis", "followup_time_months", "days_to_death"))
+# 
+# 
+# # Alternatively
+# scatterplotMatrix(owls[c(5:8)], smooth= F)
+# 
+# # Coplot, non-parallel lines might suggest significant interactions
+# # (note: same plot used to assess homogeneity of Y across the covariate!)
+# ggplot(owls, aes(ArrivalTime, NCalls)) +
+#   geom_point() +
+#   geom_smooth(method= "lm") +
+#   facet_grid(FoodTreatment~ SexParent) +
+#   theme_bw()
+
 
 # Prepare ----------------------------------------------------------------------
 rm(list = ls())
@@ -84,11 +203,23 @@ library(tableone)
 library(survival)
 library(gt)
 library(kableExtra)
+library(pastecs)
+library(car)
+library(dplyr)
+library(survival)
+library(survminer)
+library(mongolite)
+library(e1071)
+library(pals)
 
 # Themes -----------------------------------------------------------------------
 
 # Custom color palette
-my_color_palette <- c("#4C72B0", "#55A868", "#C44E52", "#8172B3", "#CCB974")
+my_color_palette <- c("#4C72B0", "#55A868", "#C44E52", "#8172B3", "#CCB974",
+                      "#64B5CD", "#8172B3", "#937860", "#DA8BC3", "#8C8C8C")
+
+max_colors <- polychrome()
+names(max_colors) <- NULL
 
 theme_basic <-   
   theme_classic() +
@@ -108,7 +239,8 @@ theme_tight_bars <-
     plot.subtitle = element_text(hjust = 0.5, face = "italic", size = 14)
   )
 
-theme_poster <-   theme_classic() +
+theme_poster <-
+  theme_classic() +
   theme(
     plot.title = element_text(hjust = 0.5, size = 28),
     plot.subtitle = element_text(hjust = 0.5, face = "italic", size = 26),
@@ -221,8 +353,94 @@ plot_top_levels <- function(data, variable, top_n = 10, include_others = TRUE, d
   
 }
 
+# Make a function to calculate the standard error SE
+se <- function(x) {
+  sd(x, na.rm = TRUE) / sqrt(length(x))
+}
 
 # Data -------------------------------------------------------------------------
+## Genes -----------------------------------------------------------------------
+# Connect to Progenetix database to get gene length
+gene_collection <- mongo(
+  collection = "genes",
+  db = "progenetix",
+  url = "mongodb://localhost",
+  verbose = FALSE,
+  options = ssl_options()
+)
+
+# Add gene length to gene_counts data frame
+# gene_locus_length = gene length
+# symbol = gene name
+
+# Get data table with gene length and gene name
+genes <- gene_collection$find(
+  fields = '{"symbol": 1, "gene_locus_length": 1, "end": 1, "start": 1, "orientation": 1, "reference_name": 1, "_id": 0}'
+)
+
+# Rename columns
+genes <- genes %>%
+  rename(
+    gene = symbol,
+    gene_start = start,
+    gene_end = end,
+    gene_orientation = orientation,
+    gene_length = gene_locus_length,
+    chromosome = reference_name)
+
+genes
+
+cgc <- read_tsv("Cosmic_CancerGeneCensus_v99_GRCh38.tsv")
+
+# Rename columns
+cgc <- cgc %>%
+  rename(gene = GENE_SYMBOL,
+         full_gene_name = NAME,
+         cgc_chromosome = CHROMOSOME,
+         cgc_start = GENOME_START,
+         cgc_end = GENOME_STOP,
+         cytoband = CHR_BAND,
+         somatic = SOMATIC,
+         germline = GERMLINE,
+         tumour_types = TUMOUR_TYPES_SOMATIC,
+         germline_tumour_types = TUMOUR_TYPES_GERMLINE,
+         transloction_partner = TRANSLOCATION_PARTNER,
+         gene_type = MOLECULAR_GENETICS,
+         cancer_role = ROLE_IN_CANCER,
+         cancer_syndrome = CANCER_SYNDROME,
+         mutation_types = MUTATION_TYPES,
+         tier = TIER
+  ) %>%
+  select(-c(COSMIC_GENE_ID, TISSUE_TYPE, OTHER_GERMLINE_MUT, OTHER_SYNDROME,
+            SYNONYMS))
+
+
+# Merge
+genes <- genes %>%
+  left_join(cgc, by = "gene")
+
+# Show differences
+genes %>%
+  filter(!is.na(cgc_start)) %>%
+  select(gene_end, cgc_end, gene_start, cgc_start,
+         chromosome, cgc_chromosome) %>%
+  # Calculate difference between start and end
+  mutate(end_diff = gene_end - cgc_end,
+         start_diff = gene_start - cgc_start,
+         chrom = chromosome == cgc_chromosome)
+
+genes <- genes %>%
+  select(-c(cgc_start, cgc_end, cgc_chromosome))
+
+head(genes)
+
+cgc_genes <- genes %>%
+  filter(!is.na(tier))
+
+head(cgc_genes)
+
+
+
 ## Metadata --------------------------------------------------------------------
 
 # Load data
@@ -248,6 +466,8 @@ metadata <- metadata %>%
   unnest(callset_ids) %>%
   mutate(callset_ids = str_replace_all(callset_ids, "[\\[\\]']", ""))
 
+unique(metadata$icdo_morphology)
+unique(metadata$icdo_topography)
 ## CNVs ------------------------------------------------------------------------
 
 # Load data
@@ -372,8 +592,13 @@ if (!("NO" %in% levels(snvs$canonical))) {
 }
 snvs$canonical[is.na(snvs$canonical)] <- "NO"
 
-snvs %>%
-  filter(is.na(project))
+
+# Merge with cgc cancer role
+cgc$gene <- as.factor(cgc$gene)
+snvs <- snvs %>%
+  left_join(select(cgc, gene, cancer_role), by = "gene")
+
+
 
 #___________________________________________####################################
 # Results ----------------------------------------------------------------------
@@ -433,10 +658,10 @@ ggarrange(
   ggarrange(
     plot_collection_moment,
     plot_frequent_origins,
-    plot_frequent_histologicals,
+    #plot_frequent_histologicals,
     plot_frequent_topographies,
     plot_frequent_morphologies,
-    ncol = 5, nrow = 1),
+    ncol = 4, nrow = 1),
   
   ncol = 1, nrow = 3,
   heights = c(1, 2, 1)

@@ -1,4 +1,5 @@
 /data/*
+/analysis/
 /.snakemake/*
 /scripts/troubleshoot.ipynb
 .DS_Store
@@ -7,3 +8,4 @@ backup_mapped_variants.json
 *.pdf
 *.png
 .Rproj.user
+.Rhistory
