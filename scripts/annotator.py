@@ -3,7 +3,7 @@
 ###############################################################################
 # Concatenate MAF files with ClinVar data
 # Create missing values for empty fields
-# Add allele frequency data
+# Add allele frequency and geolocation data
 ###############################################################################
 
 import pandas as pd
@@ -250,20 +250,28 @@ for i, row in merged_data.iterrows():
             merged_data.at[i, 'genomicHGVS_id'] = 'g.' + str(row['start']+1) + row['reference_sequence'] + '>' + row['sequence']
 
 
-    # Create variant_alternative_ids by combining dbSNP_RS and ClinGen
+    # Create variant_alternative_ids from dbSNP_RS and ClinGen (CCDS)
     if np.all(pd.isna(row['variant_alternative_ids'])):
+
         if pd.notna(row['dbSNP_RS']) and pd.notna(row['CCDS']):
             merged_data.at[i, 'variant_alternative_ids'] = [row['dbSNP_RS'], row['CCDS']]
+
         elif pd.notna(row['dbSNP_RS']):
             merged_data.at[i, 'variant_alternative_ids'] = [row['dbSNP_RS']]
+
         elif pd.notna(row['CCDS']):
             merged_data.at[i, 'variant_alternative_ids'] = [row['CCDS']]
+
+    # If variant_alternative_ids is not empty, append dbSNP_RS and/or CCDS
     else:
         alternative_ids = eval(str(row['variant_alternative_ids']))
+
         if pd.notna(row['CCDS']) and row['CCDS'] not in row['variant_alternative_ids']:
             alternative_ids.append(row['CCDS'])
+
         if pd.notna(row['dbSNP_RS']) and row['dbSNP_RS'] not in row['variant_alternative_ids']:
             alternative_ids.append(row['dbSNP_RS'])
+
         merged_data.at[i, 'variant_alternative_ids'] = alternative_ids
 
 
@@ -281,26 +289,35 @@ for i, row in merged_data.iterrows():
 
     # Create molecular_effects by combining Variant_Classification and BIOTYPE
     if np.all(pd.isna(row['molecular_effects'])):
+
         if pd.notna(row['Consequence']):
             consequences = row['Consequence'].split(';')
             merged_data.at[i, 'molecular_effects'] = [{'id': so_dict[consequences[0]], 'label': consequences[0]}]
+
             if len(consequences) > 1:
                 for consequence in consequences[1:]:
                     merged_data.at[i, 'molecular_effects'].append({'id': so_dict[consequence], 'label': consequence})
+        
         elif pd.notna(row['One_Consequence']):
             merged_data.at[i, 'molecular_effects'] = [{'id': so_dict[row['One_Consequence']], 'label': row['One_Consequence']}]
+
+    # If molecular_effects is not empty, append Consequence or One_Consequence
     else:
         existing_effects = eval(str(row['molecular_effects']))
         existing_effects_labels = [effect['label'] for effect in existing_effects]
+        
         if pd.notna(row['Consequence']):
             for consequence in row['Consequence'].split(';'):
                 # make sure consequence is not already present
                 if consequence not in existing_effects_labels:
                     existing_effects.append({'id': so_dict[consequence], 'label': consequence})
+
             merged_data.at[i, 'molecular_effects'] = existing_effects
+
         elif pd.notna(row['One_Consequence']):
             if row['One_Consequence'] not in existing_effects_labels:
                 existing_effects.append({'id': so_dict[row['One_Consequence']], 'label': row['One_Consequence']})
+
             merged_data.at[i, 'molecular_effects'] = existing_effects
 
 
@@ -316,6 +333,7 @@ for i, row in merged_data.iterrows():
                             {'id': 'SIFT', 'label': row['SIFT']}],
                     'effect_ids': []
                 })]
+
             elif pd.notna(row['PolyPhen']):
                 merged_data.at[i, 'clinical_interpretations'] = [({
                     'category': {'id': 'MONDO:0000001', 'label': 'disease or disorder'},
@@ -324,6 +342,7 @@ for i, row in merged_data.iterrows():
                     'effect': {'id': 'PolyPhen', 'label': row['PolyPhen']},
                     'effect_ids': []
                 })]
+
             elif pd.notna(row['SIFT']):
                 merged_data.at[i, 'clinical_interpretations'] = [({
                     'category': {'id': 'MONDO:0000001', 'label': 'disease or disorder'},
@@ -332,6 +351,7 @@ for i, row in merged_data.iterrows():
                     'effect': {'id': 'SIFT', 'label': row['SIFT']},
                     'effect_ids': []
                 })]
+
             else:
                 merged_data.at[i, 'clinical_interpretations'] = [({
                     'category': {'id': 'MONDO:0000001', 'label': 'disease or disorder'},
@@ -340,6 +360,8 @@ for i, row in merged_data.iterrows():
                     'effect': {'id': 'MedGen:CN517202', 'label': 'not provided'},
                     'effect_ids': ['MedGen:CN517202']
                 })]
+
+    # If clinical_interpretations is not empty, append CLIN_SIG
     else:
         interpretations = eval(str(row['clinical_interpretations']))
         interpretations_labels = [interpretation['clinical_relevance'] for interpretation in interpretations]
@@ -353,6 +375,7 @@ for i, row in merged_data.iterrows():
                             {'id': 'SIFT', 'label': row['SIFT']}],
                     'effect_ids': []
                 })
+
             elif pd.notna(row['PolyPhen']):
                 interpretations.append({
                     'category': {'id': 'MONDO:0000001', 'label': 'disease or disorder'},
@@ -361,6 +384,7 @@ for i, row in merged_data.iterrows():
                     'effect': {'id': 'PolyPhen', 'label': row['PolyPhen']},
                     'effect_ids': []
                 })
+
             elif pd.notna(row['SIFT']):
                 interpretations.append({
                     'category': {'id': 'MONDO:0000001', 'label': 'disease or disorder'},
@@ -369,6 +393,7 @@ for i, row in merged_data.iterrows():
                     'effect': {'id': 'SIFT', 'label': row['SIFT']},
                     'effect_ids': []
                 })
+
             else:
                 interpretations.append({
                     'category': {'id': 'MONDO:0000001', 'label': 'disease or disorder'},
@@ -377,7 +402,9 @@ for i, row in merged_data.iterrows():
                     'effect': {'id': 'MedGen:CN517202', 'label': 'not provided'},
                     'effect_ids': ['MedGen:CN517202']
                 })
+
         merged_data.at[i, 'clinical_interpretations'] = interpretations
+
 
 # Add geolocation data
 print("Adding geolocation data...")

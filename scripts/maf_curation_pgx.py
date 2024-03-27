@@ -45,10 +45,10 @@ maf_data.rename(columns={"Variant_Type": "variant_type",
                          "End_Position": "end",
                          "Reference_Allele": "reference_sequence",
                          "Tumor_Seq_Allele2": "sequence",
-                         "Chromosome": "chromosome",}, inplace=True)
+                         "Chromosome": "reference_name",}, inplace=True)
 
 # Naming convention from progenetix
-maf_data["chromosome"] = maf_data["chromosome"].str.slice(start=3)
+maf_data["reference_name"] = maf_data["reference_name"].str.slice(start=3)
 maf_data.loc[maf_data["reference_sequence"] == "-", "reference_sequence"] = "__None__"
 maf_data.loc[maf_data["sequence"] == "-", "sequence"] = "__None__"
 
@@ -118,7 +118,7 @@ matching_maf_data = maf_data.dropna(subset = ["biosample_id"])
 
 # Create import file
 import_variants = matching_maf_data[["biosample_id", "variant_id", "callset_id", "individual_id",
-    "chromosome", "start", "end", "reference_sequence",
+    "reference_name", "start", "end", "reference_sequence",
     "sequence", "variant_classification", "variant_state_id",
     "specific_so", "case_id", "sample_id", "variant_type"]]
 
