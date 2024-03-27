@@ -45,10 +45,10 @@ maf_data.rename(columns={"Variant_Type": "variant_type",
                          "End_Position": "end",
                          "Reference_Allele": "reference_sequence",
                          "Tumor_Seq_Allele2": "sequence",
-                         "Chromosome": "chromosome",}, inplace=True)
+                         "Chromosome": "reference_name",}, inplace=True)
 
 # Naming convention from progenetix
-maf_data["chromosome"] = maf_data["chromosome"].str.slice(start=3)
+maf_data["reference_name"] = maf_data["reference_name"].str.slice(start=3)
 maf_data.loc[maf_data["reference_sequence"] == "-", "reference_sequence"] = "__None__"
 maf_data.loc[maf_data["sequence"] == "-", "sequence"] = "__None__"
 
@@ -68,6 +68,9 @@ maf_data.loc[maf_data["variant_type"] == "MNV", "specific_so"] = "SO:0002007"
 maf_data.loc[maf_data["variant_type"] == "DEL", "specific_so"] = "SO:0000159"
 maf_data.loc[maf_data["variant_type"] == "INS", "specific_so"] = "SO:0000667"
 
+# Adding paramater analysis_operation_id & analysis_operation_label
+maf_data["analysis_operation_id"] = "EDAM:operation_3227"
+maf_data["analysis_operation_label"] = "Variant Calling"
 
 # Convert 1-based MAF files to 0-based
 # Explanation @ https://www.biostars.org/p/84686/
@@ -114,16 +117,10 @@ maf_data.drop(drop, axis=1, inplace=True)
 matching_maf_data = maf_data.dropna(subset = ["biosample_id"])
 
 # Create import file
-import_variants = matching_maf_data[[
-    "biosample_id", "variant_id", "callset_id", "individual_id",
-    "chromosome", "start", "end", "reference_sequence", "sequence",
-    "variant_classification", "specific_so", "case_id", "sample_id",
-    "variant_type"]]
-
-import_variants.rename(columns={
-    "chromosome": "reference_name",
-    "specific_so": "variant_state_id",
-    }, inplace=True)
+import_variants = matching_maf_data[["biosample_id", "variant_id", "callset_id", "individual_id",
+    "reference_name", "start", "end", "reference_sequence",
+    "sequence", "variant_classification", "variant_state_id",
+    "specific_so", "case_id", "sample_id", "variant_type"]]
 
 # Write finished mapping file
 os.makedirs("data/", exist_ok = True) # Check for the directory

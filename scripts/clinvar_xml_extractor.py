@@ -5,8 +5,6 @@
 ###############################################################################
 
 # Import packages #############################################################
-import pandas as pd
-import numpy as np
 import json
 import xml.etree.ElementTree as ET
 import os
@@ -79,6 +77,8 @@ def process_variation(variation_archive):
             return None
     ###########################################################################
     # Variant name and type
+    ###########################################################################
+
     variant_dictionary["variant_name"] = variation_name
     variant_type = variation_archive.get("VariationType")
     variant_dictionary["variant_type"] = variant_type
@@ -223,12 +223,13 @@ def process_variation(variation_archive):
 
 # Output directory
 output_directory = "data/"
-file_path = os.path.join(output_directory, "ClinVarVariationRelease_00-latest.xml")
+output_file = "ClinVarVCVRelease_00-latest.xml.gz"
+file_path = os.path.join(output_directory, output_file)
 
 if not os.path.isfile(file_path):
     print("Downloading file...")
     # Link to ClinVar XML data
-    url = "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/clinvar_variation/ClinVarVariationRelease_00-latest.xml.gz"
+    url = "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/xml/ClinVarVCVRelease_00-latest.xml.gz"
     response = requests.get(url)
 
     # Check if the request was successful (status code 200)
@@ -245,9 +246,7 @@ if not os.path.isfile(file_path):
 # If the file exists, start mapping -------------------------------------------
 print("Start mapping...")
 
-variation_xml = "data/ClinVarVariationRelease_00-latest.xml"
-
-for event, elem in ET.iterparse(variation_xml, events=("start", "end")):
+for event, elem in ET.iterparse(file_path, events=("start", "end")):
 
     # VariationArchive is root tag
     if event == "start" and elem.tag == "VariationArchive":
