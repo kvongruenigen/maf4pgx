@@ -26,8 +26,64 @@ __Expected outcomes:__
     - [ Conversion ](#conversion)
     - [ Curation ](#curation)
     - [ Clinvar annotation mining ](#clinvar)
- 
+ ```mermaid
+%%{
+  init: {
+    'flowchart': {'defaultRenderer': 'elk'},
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': 'white',
+      'primaryTextColor': 'black',
+      'primaryBorderColor': 'lightblue',
+      'fontFamily': 'Helvetica',
+      'lineColor': 'gray',
+      'tertiaryColor': 'white'
+    }
+  }
+}%%
+graph TD
+	%% Objects
+	gdc("Data acquisition from GDC API")
+	data("Data extraction & Collection")
+	duplicates("Removing duplicates (BROAD Filter)")
+	barcode("Barcode conversion")
+	mapping("Mapping to sample UUID in Progenetix")
+	clinvar("ClinVar annotation")
+	maf("MAF annotation")
+	import("Import file")
+	progenetix("Progenetix")
+	sampleuuid("Sample UUID")
+	samplebarcode("Sample Barcode")
+	aliquotbarcode("Aliquot Barcode")
 
+	%% Relationships
+	gdc ==> data
+    MAF:::sub
+	subgraph MAF
+	data ==> duplicates ==> barcode ==> mapping
+	clinvar ==> maf	
+	mapping ==> maf
+	mapping ==>|biosample_id\nindividual_id|import
+
+    subgraph Conversion
+		aliquotbarcode -.-> samplebarcode -.-> sampleuuid
+	end
+		Conversion -.-> barcode
+		barcode -.-> Conversion
+	end
+	maf ==>|Variation annotation|progenetix	
+	import ==>|Variation import|progenetix
+	
+	
+
+
+    classDef node stroke-width: 4px
+    classDef border stroke-width: 4px
+    classDef a padding-left: 5em, stroke:#add8e6, stroke-width: 4px
+    classDef sub stroke:#add8e6, stroke-width: 4px
+```
+
+---
 
 <a name="novelData"></a>
 ## Novel data
