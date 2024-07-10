@@ -108,8 +108,6 @@ __Script__: extractor.py
 
 __Modules__: pandas, os, glob, tqdm
 
-*For future use it should be possible to load MAF files into the same directory and the workflow will extract the information from the files and store them together in a file called maf_data.csv. If there is already data available from previous imports, it will be read in and the new data will be compared to the existing, so only additional data will get loaded into the CSV.* ****(Not there yet. Necessary?)****
-
 The extraction script loads in the MAF files stored in the `data/maf_files/` directory and puts all files in a list of data frames, which will be concatenated in the end. The combined data will be stored in `data/maf_data.csv`.
 
 ---
