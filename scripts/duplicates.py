@@ -61,7 +61,7 @@ if number_duplications > 0:
     variants_to_drop = pd.concat(variants_to_drop)
 
     indexes_for_dropping = list(variants_to_drop.index)
-    maf_data.drop(index=indexes_for_dropping)
+    maf_data.drop(index=indexes_for_dropping, inplace = True)
 
 #  Save data
 maf_data.to_csv('data/maf_data_duplicates_removed.csv', index=False)
