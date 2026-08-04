@@ -184,13 +184,19 @@ Additional explanation for the genomic coordinate system: [https://www.biostars.
 
 Then the set of unique sample identifiers is mapped to the Progenetix data base, where the internal positions biosample_id, corresponding to the sample identifier, and individual_id, corresponding to the individual the tumor sample belongs to, is retrieved, if the sample identifier is matched in the data base. Additionally, an internal position callset_id is generated and added for each unique sample identifier. The generated and the retrieved variables are then assigned to the corresponding sample identifier.
 
-In the end, the variants that could not be mapped to a sample identifier will be discarded. The variants ready to be imported will be stored as varImport.tsv in the data directory with the following format:
+In the end, the variants that could not be mapped to a sample identifier will not be imported. They are written to `data/varNew.tsv` as an audit file. The variants ready to be imported will be stored as varImport.tsv in the data directory with the following format:
 
 | biosample_id | variant_id | callset_id | individual_id | reference_name | start | end | reference_sequence | sequence | variant_classification | variant_state_id | specific_so | case_id | sample_id | snv_type |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 
 With this the format for the database import is given and the data can be import into the Progenetix MongoDB.
+
+---
+
+## Legacy BeyondCNVs notes
+
+This workflow was split out from the broader BeyondCNVs project. Migration notes from the old repository are stored in [`docs/beyondcnvs_migration_notes.md`](docs/beyondcnvs_migration_notes.md).
 
 ---
 

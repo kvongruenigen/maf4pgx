@@ -16,6 +16,7 @@
 # Outputs: 
 # - data/varImport.tsv -> Variants ready for import
 # - data/matching_maf_data_curated.csv -> MAF data with matching biosample
+# - data/varNew.tsv -> Curated variants without a matching biosample
 ###############################################################################
 
 import os
@@ -113,19 +114,24 @@ drop = ["Tumor_Seq_Allele1", "Matched_Norm_Sample_Barcode", "Matched_Norm_Sample
         "Allele", "normal_bam_uuid", "tumor_bam_uuid",]
 maf_data.drop(drop, axis=1, inplace=True)
 
-# Select only matched variants
-matching_maf_data = maf_data.dropna(subset = ["biosample_id"])
-
-# Create import file
-import_variants = matching_maf_data[["biosample_id", "variant_id", "callset_id", "individual_id",
+import_columns = ["biosample_id", "variant_id", "callset_id", "individual_id",
     "reference_name", "start", "end", "reference_sequence",
     "sequence", "variant_classification", "variant_state_id",
-    "specific_so", "case_id", "sample_id", "variant_type"]]
+    "specific_so", "case_id", "sample_id", "variant_type"]
+
+# Select variants by mapping status
+matching_maf_data = maf_data.dropna(subset = ["biosample_id"])
+unmatched_maf_data = maf_data[maf_data["biosample_id"].isna()]
+
+# Create import and audit files
+import_variants = matching_maf_data[import_columns]
+unmatched_variants = unmatched_maf_data[import_columns]
 
 # Write finished mapping file
 os.makedirs("data/", exist_ok = True) # Check for the directory
 import_variants.to_csv("data/varImport.tsv", sep = "\t", index = False)  # and create .tsv file in the directory
 matching_maf_data.to_csv("data/matching_maf_data_curated.csv", index = False)  # and create .tsv file in the directory
+unmatched_variants.to_csv("data/varNew.tsv", sep = "\t", index = False)  # and create .tsv file in the directory
 print("Removed " + str(len(maf_data) - len(matching_maf_data)) + " variants without matching biosample.")
 
-print("Done.\n- Variants ready for import: data/varImport.tsv")
+print("Done.\n- Variants ready for import: data/varImport.tsv\n- Variants without matching biosample: data/varNew.tsv")

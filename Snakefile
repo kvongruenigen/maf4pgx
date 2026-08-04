@@ -9,6 +9,7 @@ rule import_file:
 		"data/maf_data_duplicates_removed.csv",
 		"data/pgx_import.tsv",
 		"data/varImport.tsv",
+		"data/varNew.tsv",
 
 # All files with annotations
 rule make_files:
@@ -17,6 +18,7 @@ rule make_files:
 		"data/maf_data_duplicates_removed.csv",
 		"data/pgx_import.tsv",
 		"data/varImport.tsv",
+		"data/varNew.tsv",
 		"data/clinvar_variants.json",
 		"data/matching_maf_data_curated.csv",
 		"data/maf_master.csv"
@@ -90,6 +92,7 @@ rule mapping:
 		"data/pgx_import.tsv"
 	output:
 		"data/varImport.tsv",
+		"data/varNew.tsv",
 		"data/matching_maf_data_curated.csv"
 	script:
 		"scripts/maf_curation_pgx.py"
