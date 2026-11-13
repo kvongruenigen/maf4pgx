@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Synthetic cohort · Fictional data · Mutation and copy number</title>
+<style>
+:root {
+  color-scheme: light;
+  --ink: #192b36; --muted: #4c6573; --paper: #f2f6f6; --border: #cad8df;
+  --accent: #126459; --loss: #a53d32; --gain: #2e58a4; --protein: #7140a0;
+  --other: #506e80; --quiet: #dae7e6;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.5 system-ui, sans-serif; }
+main { width: min(100% - 2rem, 76rem); margin: 2rem auto 4rem; }
+header { border-bottom: 1px solid var(--border); margin-bottom: 1.4rem; padding-bottom: 1rem; }
+h1, h2, h3, p { margin: 0 0 .6rem; }
+h1 { font-size: clamp(1.9rem, 5vw, 3.1rem); letter-spacing: -.04em; line-height: 1.12; }
+h2 { font-size: 1.4rem; letter-spacing: -.025em; }
+h3 { font-size: 1rem; }
+.eyebrow { color: var(--accent); font-weight: 700; }
+.muted, caption { color: var(--muted); }
+.panel { background: white; border: 1px solid var(--border); border-radius: .8rem; padding: 1rem; margin-bottom: 1rem; }
+.controls, .legend, .pages { display: flex; flex-wrap: wrap; gap: .65rem 1rem; align-items: center; }
+.controls label { display: grid; gap: .25rem; font-size: .9rem; font-weight: 650; }
+button, select { font: inherit; color: inherit; }
+select, .pages button { padding: .35rem .55rem; border: 1px solid #859da9; border-radius: .35rem; background: white; }
+button:not(:disabled) { cursor: pointer; }
+button:disabled { opacity: .5; }
+:focus-visible { outline: 3px solid #004c75; outline-offset: 2px; }
+.scroll { overflow: auto; }
+table { border-collapse: collapse; text-align: left; }
+#matrix { width: 100%; margin: .75rem 0; }
+#matrix th { white-space: nowrap; font-size: .83rem; }
+#matrix th[scope="row"] { position: sticky; left: 0; background: white; padding-right: .75rem; z-index: 1; }
+#matrix td, #matrix th { padding: .17rem .14rem; }
+#matrix th[scope="col"] { text-align: center; }
+.cell { display: block; width: 100%; min-width: 1.75rem; height: 1.8rem; border: 1px solid transparent; border-radius: .22rem; }
+.cell[aria-pressed="true"] { border-color: #172d40; box-shadow: inset 0 0 0 2px white; }
+.loss { background: var(--loss); }
+.gain { background: var(--gain); }
+.protein { background: var(--protein); }
+.other { background: var(--other); }
+.quiet { background: var(--quiet); }
+.unknown { background: repeating-linear-gradient(135deg, #d0dbe0 0 3px, #f3f6f7 3px 6px); }
+.legend { padding: 0; margin: .7rem 0 .6rem; font-size: .84rem; list-style: none; }
+.swatch { width: .85rem; height: .85rem; border-radius: .15rem; display: inline-block; margin-right: .3rem; vertical-align: -.12rem; }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; }
+.detail-grid section { overflow-wrap: anywhere; }
+.detail-grid ul { padding-left: 1.15rem; }
+a { color: #0c615c; }
+#summary { width: 100%; }
+#summary th, #summary td { padding: .55rem; border-bottom: 1px solid var(--border); }
+#summary caption { caption-side: bottom; padding: .65rem 0 0; text-align: left; font-size: .9rem; }
+.locus-track { position: relative; height: 1.3rem; margin: .65rem 0 .15rem; background: #e9eef0; border-radius: .22rem; }
+.locus-track span { position: absolute; height: 100%; min-width: 2px; border-radius: .2rem; }
+.axis { display: flex; justify-content: space-between; font: .75rem ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<main>
+<header>
+<p class="eyebrow">Synthetic cohort · Fictional data</p>
+<h1>Mutations and copy number</h1>
+<p class="muted">Explore where reported sequence changes and copy loss occur in the same tumor sample.</p>
+</header>
+<section class="panel" aria-labelledby="oncoprint-title">
+<h2 id="oncoprint-title">Cohort oncoprint</h2>
+<div class="controls">
+<label>GDC segment mean cutoff
+<select id="threshold"><option value="0.15">±0.15</option><option value="0.20" selected>±0.20</option><option value="0.25">±0.25</option></select>
+</label>
+<label>Samples shown
+<select id="scope"><option value="all">All mutation-export samples</option><option value="matched">Cached Progenetix comparison for either gene</option></select>
+</label>
+</div>
+<ul class="legend" aria-label="Oncoprint legend">
+<li><span class="swatch protein"></span>Protein-altering or splice-site call</li>
+<li><span class="swatch other"></span>Other sequence call</li>
+<li><span class="swatch loss"></span>Copy loss</li>
+<li><span class="swatch gain"></span>Copy gain</li>
+<li><span class="swatch quiet"></span>No reported call / within cutoff</li>
+<li><span class="swatch unknown"></span>Unresolved or unknown</li>
+</ul>
+<p class="muted">Each column is a tumor sample. Select a cell to inspect its evidence below.</p>
+<div class="scroll"><table id="matrix" aria-label="Mutation and copy-number evidence by tumor sample"></table></div>
+<div class="pages">
+<button id="previous" type="button">Previous samples</button>
+<span id="page-info" role="status"></span>
+<button id="next" type="button">Next samples</button>
+</div>
+<noscript>This local report requires JavaScript to display the data and respond to the controls.</noscript>
+</section>
+<section class="panel" aria-labelledby="detail-heading">
+<h2 id="detail-heading">Locus evidence</h2>
+<p id="selection" aria-live="polite"></p>
+<div id="details" class="detail-grid"></div>
+</section>
+<section class="panel" aria-labelledby="summary-heading">
+<h2 id="summary-heading">Copy loss and co-occurrence</h2>
+<div class="scroll">
+<table id="summary">
+<thead><tr><th scope="col">Gene</th><th scope="col">GDC copy loss + protein or splice call</th>
+<th scope="col">GDC co-occurrence in comparison</th><th scope="col">GDC copy loss in comparison</th><th scope="col">Progenetix copy loss</th>
+<th scope="col">Loss in both</th><th scope="col">Progenetix unknown</th></tr></thead>
+<tbody></tbody>
+<caption>GDC co-occurrence uses GDC-evaluable samples in the selected view. The source comparison uses each gene’s cached, GDC-evaluable Progenetix subset. Missing, partial, failed, or conflicting Progenetix evidence stays unknown. Each denominator stays fixed across GDC cutoffs.</caption>
+</table>
+</div>
+</section>
+<section class="panel" aria-labelledby="methods-heading">
+<h2 id="methods-heading">Methods and sources</h2>
+<p>Samples come from the all-gene mutation export. Tumors with no reported variants in that export fall outside the sample universe. Repeated reports of an allele in a sample count once.</p>
+<p>GDC copy state requires one segment spanning the GRCh38 locus without another overlapping segment. Gain and loss include the cutoff boundaries. Cached GDC segments can resolve samples that the original pilot could not download. Progenetix evidence comes from cached queries joined by audited GDC sample UUID. Beacon intervals are displayed as 1-based inclusive coordinates.</p>
+<p>Counts describe same-sample co-occurrence. Sequence calls and copy-number segments do not identify which allele carries an event.</p>
+</section>
+</main>
+<script type="application/json" id="cohort-data">{"label":"Synthetic cohort \u00b7 Fictional data","samples":["SYNTHETIC-01","SYNTHETIC-02","SYNTHETIC-03","SYNTHETIC-04","SYNTHETIC-05","SYNTHETIC-06","SYNTHETIC-07","SYNTHETIC-08"],"loci":{"TP53":["17",7661779,7687538],"APC":["5",112707498,112846239]},"records":{"TP53":{"SYNTHETIC-01":{"variants":[{"assembly":"GRCh38","chromosome":"chr17","start":"7670000","end":"7670000","ref":"C","alt":"T","consequences":["Missense_Mutation","Silent"],"files":["00000000-0000-4000-8000-000000000001","00000000-0000-4000-8000-000000000002"]}],"protein_count":1,"gdc":{"file":"00000000-0000-4000-8000-000000000201","uuid":"00000000-0000-4000-8000-000000000101","mean":-0.15,"segments":[{"start":7661779,"end":7687538,"mean":-0.15}],"reason":"","pilot_state":"Within threshold"},"pgx":{"join":"matched","state":"Copy loss","biosample":"fictional-biosample-1","reason":"Copy loss","intervals":[{"start":7661779,"end":7687538,"state_id":"EFO:0030068"}],"in_comparison":true}},"SYNTHETIC-02":{"variants":[{"assembly":"GRCh38","chromosome":"chr17","start":"7670010","end":"7670010","ref":"C","alt":"T","consequences":["Splice_Site"],"files":["00000000-0000-4000-8000-000000000001"]}],"protein_count":1,"gdc":{"file":"00000000-0000-4000-8000-000000000202","uuid":"00000000-0000-4000-8000-000000000102","mean":-0.2,"segments":[{"start":7661779,"end":7687538,"mean":-0.2}],"reason":"","pilot_state":"Copy loss"},"pgx":{"join":"matched","state":"No spanning CNV reported","biosample":"fictional-biosample-2","reason":"No spanning CNV reported","intervals":[],"in_comparison":true}},"SYNTHETIC-03":{"variants":[{"assembly":"GRCh38","chromosome":"chr17","start":"7670020","end":"7670020","ref":"C","alt":"T","consequences":["Silent"],"files":["00000000-0000-4000-8000-000000000001"]}],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000203","uuid":"00000000-0000-4000-8000-000000000103","mean":-0.25,"segments":[{"start":7661779,"end":7687538,"mean":-0.25}],"reason":"","pilot_state":"Copy loss"},"pgx":{"join":"matched","state":"Copy loss","biosample":"fictional-biosample-3","reason":"Copy loss","intervals":[{"start":7661779,"end":7687538,"state_id":"EFO:0030068"}],"in_comparison":true}},"SYNTHETIC-04":{"variants":[],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000204","uuid":"00000000-0000-4000-8000-000000000104","mean":null,"segments":[{"start":7661779,"end":7661779,"mean":-0.3}],"reason":"Partial locus coverage","pilot_state":"Unresolved coverage"},"pgx":{"join":"ambiguous_progenetix_match","state":"Unknown","biosample":"fictional-biosample-4,fictional-biosample-4b","reason":"Ambiguous Progenetix biosample","intervals":[],"in_comparison":false}},"SYNTHETIC-05":{"variants":[],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000205","uuid":"00000000-0000-4000-8000-000000000105","mean":null,"segments":[{"start":7661779,"end":7687538,"mean":-0.4},{"start":7687538,"end":7687539,"mean":0.1}],"reason":"Multiple overlapping segments","pilot_state":"Unresolved coverage"},"pgx":{"join":"no_progenetix_match","state":"Unknown","biosample":"","reason":"No matching Progenetix biosample","intervals":[],"in_comparison":false}},"SYNTHETIC-06":{"variants":[],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000206","uuid":"00000000-0000-4000-8000-000000000106","mean":0.15,"segments":[{"start":7661779,"end":7687538,"mean":0.15}],"reason":"","pilot_state":"Within threshold"},"pgx":{"join":"matched","state":"Query failed","biosample":"fictional-biosample-6","reason":"Synthetic query failure","intervals":[],"in_comparison":true}},"SYNTHETIC-07":{"variants":[],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000207","uuid":"00000000-0000-4000-8000-000000000107","mean":null,"segments":[],"reason":"Segment file missing from cache","pilot_state":"Download failed"},"pgx":{"join":"matched","state":"Unknown","biosample":"fictional-biosample-7","reason":"No cached Progenetix comparison for this locus","intervals":[],"in_comparison":false}},"SYNTHETIC-08":{"variants":[],"protein_count":0,"gdc":{"file":"","uuid":"","mean":null,"segments":[],"reason":"No matched file","pilot_state":"No matched file"},"pgx":{"join":"no_gdc_uuid","state":"Unknown","biosample":"","reason":"No GDC sample UUID","intervals":[],"in_comparison":false}}},"APC":{"SYNTHETIC-01":{"variants":[],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000201","uuid":"00000000-0000-4000-8000-000000000101","mean":0,"segments":[{"start":112707498,"end":112846239,"mean":0}],"reason":"","pilot_state":"Within threshold"},"pgx":{"join":"matched","state":"Partial overlap only","biosample":"fictional-biosample-1","reason":"Partial overlap only","intervals":[{"start":112707498,"end":112707499,"state_id":"EFO:0030068"}],"in_comparison":true}},"SYNTHETIC-02":{"variants":[{"assembly":"GRCh38","chromosome":"chr5","start":"112710000","end":"112710000","ref":"C","alt":"T","consequences":["Nonsense_Mutation"],"files":["00000000-0000-4000-8000-000000000001"]}],"protein_count":1,"gdc":{"file":"00000000-0000-4000-8000-000000000202","uuid":"00000000-0000-4000-8000-000000000102","mean":-0.25,"segments":[{"start":112707498,"end":112846239,"mean":-0.25}],"reason":"","pilot_state":"Copy loss"},"pgx":{"join":"matched","state":"Copy loss","biosample":"fictional-biosample-2","reason":"Copy loss","intervals":[{"start":112707498,"end":112846239,"state_id":"EFO:0030068"}],"in_comparison":true}},"SYNTHETIC-03":{"variants":[{"assembly":"GRCh38","chromosome":"chr5","start":"112720000","end":"112720000","ref":"C","alt":"T","consequences":["Missense_Mutation"],"files":["00000000-0000-4000-8000-000000000001"]}],"protein_count":1,"gdc":{"file":"00000000-0000-4000-8000-000000000203","uuid":"00000000-0000-4000-8000-000000000103","mean":0.2,"segments":[{"start":112707498,"end":112846239,"mean":0.2}],"reason":"","pilot_state":"Copy gain"},"pgx":{"join":"matched","state":"Copy gain","biosample":"fictional-biosample-3","reason":"Copy gain","intervals":[{"start":112707498,"end":112846239,"state_id":"EFO:0030069"}],"in_comparison":true}},"SYNTHETIC-04":{"variants":[{"assembly":"GRCh38","chromosome":"chr5","start":"112730000","end":"112730000","ref":"C","alt":"T","consequences":["Silent"],"files":["00000000-0000-4000-8000-000000000001"]}],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000204","uuid":"00000000-0000-4000-8000-000000000104","mean":0.25,"segments":[{"start":112707498,"end":112846239,"mean":0.25}],"reason":"","pilot_state":"Copy gain"},"pgx":{"join":"ambiguous_progenetix_match","state":"Unknown","biosample":"fictional-biosample-4,fictional-biosample-4b","reason":"Ambiguous Progenetix biosample","intervals":[],"in_comparison":false}},"SYNTHETIC-05":{"variants":[],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000205","uuid":"00000000-0000-4000-8000-000000000105","mean":null,"segments":[],"reason":"No overlapping segment","pilot_state":"Unresolved coverage"},"pgx":{"join":"no_progenetix_match","state":"Unknown","biosample":"","reason":"No matching Progenetix biosample","intervals":[],"in_comparison":false}},"SYNTHETIC-06":{"variants":[],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000206","uuid":"00000000-0000-4000-8000-000000000106","mean":0,"segments":[{"start":112707498,"end":112846239,"mean":0}],"reason":"","pilot_state":"Within threshold"},"pgx":{"join":"matched","state":"No spanning CNV reported","biosample":"fictional-biosample-6","reason":"No spanning CNV reported","intervals":[],"in_comparison":true}},"SYNTHETIC-07":{"variants":[],"protein_count":0,"gdc":{"file":"00000000-0000-4000-8000-000000000207","uuid":"00000000-0000-4000-8000-000000000107","mean":null,"segments":[],"reason":"Segment file missing from cache","pilot_state":"Download failed"},"pgx":{"join":"matched","state":"Unknown","biosample":"fictional-biosample-7","reason":"No cached Progenetix comparison for this locus","intervals":[],"in_comparison":false}},"SYNTHETIC-08":{"variants":[],"protein_count":0,"gdc":{"file":"","uuid":"","mean":null,"segments":[],"reason":"Ambiguous files","pilot_state":"Ambiguous files"},"pgx":{"join":"no_gdc_uuid","state":"Unknown","biosample":"","reason":"No GDC sample UUID","intervals":[],"in_comparison":false}}}},"synthetic":true}</script>
+<script>
+"use strict";
+const report = JSON.parse(document.querySelector("#cohort-data").textContent);
+const genes = Object.keys(report.loci);
+const matrix = document.querySelector("#matrix");
+const threshold = document.querySelector("#threshold");
+const scope = document.querySelector("#scope");
+const previous = document.querySelector("#previous");
+const next = document.querySelector("#next");
+const pageSize = 24;
+const tracks = {sequence: "Sequence", gdc: "GDC copy", pgx: "Progenetix copy"};
+let page = 0;
+let selected = {gene: genes[0], sample: report.samples[0], track: "sequence"};
+
+function copyState(mean, cutoff) {
+  if (mean === null) return "Unresolved coverage";
+  if (mean <= -cutoff) return "Copy loss";
+  if (mean >= cutoff) return "Copy gain";
+  return "Within cutoff";
+}
+
+function summarize(records, cutoff) {
+  const evaluable = records.filter(row => row.gdc.mean !== null);
+  const matched = evaluable.filter(row => row.pgx.in_comparison);
+  const isLoss = row => copyState(row.gdc.mean, cutoff) === "Copy loss";
+  const pgxLoss = row => row.pgx.state === "Copy loss";
+  return {
+    evaluable: evaluable.length,
+    cooccurring: evaluable.filter(row => row.protein_count > 0 && isLoss(row)).length,
+    matched: matched.length,
+    matchedCooccurring: matched.filter(row => row.protein_count > 0 && isLoss(row)).length,
+    gdcLoss: matched.filter(isLoss).length,
+    pgxLoss: matched.filter(pgxLoss).length,
+    bothLoss: matched.filter(row => isLoss(row) && pgxLoss(row)).length,
+    unknown: matched.filter(row => !["Copy loss", "Copy gain"].includes(row.pgx.state)).length,
+  };
+}
+
+function stateOf(row, track) {
+  if (track === "gdc") return copyState(row.gdc.mean, Number(threshold.value));
+  if (track === "pgx") return row.pgx.state;
+  if (row.protein_count) return "Protein-altering or splice-site call";
+  return row.variants.length ? "Other sequence call" : "No reported call";
+}
+
+function stateColor(state) {
+  return ({
+    "Copy loss": "loss", "Copy gain": "gain", "Within cutoff": "quiet",
+    "No reported call": "quiet", "Protein-altering or splice-site call": "protein",
+    "Other sequence call": "other",
+  })[state] || "unknown";
+}
+
+function element(tag, text, parent) {
+  const item = document.createElement(tag);
+  item.textContent = text;
+  parent.append(item);
+  return item;
+}
+
+function shownSamples() {
+  if (scope.value === "all") return report.samples;
+  return report.samples.filter(sample =>
+    genes.some(gene => report.records[gene][sample].pgx.in_comparison)
+  );
+}
+
+function renderMatrix(samples) {
+  const visible = samples.slice(page * pageSize, (page + 1) * pageSize);
+  matrix.replaceChildren();
+  const head = matrix.createTHead().insertRow();
+  element("th", "Sample", head).scope = "col";
+  for (const [index, sample] of visible.entries()) {
+    const column = element("th", String(page * pageSize + index + 1), head);
+    column.scope = "col";
+    column.title = sample;
+  }
+  const body = matrix.createTBody();
+  for (const gene of genes) {
+    for (const [track, label] of Object.entries(tracks)) {
+      const row = body.insertRow();
+      element("th", gene + " · " + label, row).scope = "row";
+      for (const sample of visible) {
+        const state = stateOf(report.records[gene][sample], track);
+        const button = element("button", "", row.insertCell());
+        const description = [sample, gene, label, state].join(" · ");
+        button.type = "button";
+        button.className = "cell " + stateColor(state);
+        button.title = description;
+        button.setAttribute("aria-label", description);
+        button.setAttribute("aria-pressed", String(
+          selected.sample === sample && selected.gene === gene && selected.track === track
+        ));
+        button.addEventListener("click", () => {
+          matrix.querySelector('[aria-pressed="true"]')?.setAttribute("aria-pressed", "false");
+          button.setAttribute("aria-pressed", "true");
+          selected = {gene, sample, track};
+          renderDetails();
+        });
+      }
+    }
+  }
+  previous.disabled = page === 0;
+  next.disabled = (page + 1) * pageSize >= samples.length;
+  document.querySelector("#page-info").textContent = visible.length
+    ? `${page * pageSize + 1}–${page * pageSize + visible.length} of ${samples.length} samples`
+    : "No samples in this view";
+}
+
+function detailList(section, items, describe) {
+  if (!items.length) return;
+  const list = element("ul", "", section);
+  for (const item of items) describe(item, element("li", "", list));
+}
+
+function locusTrack(section, start, end, records) {
+  if (!records.length) return;
+  const track = element("div", "", section);
+  track.className = "locus-track";
+  track.setAttribute("aria-hidden", "true");
+  const width = end - start + 1;
+  for (const item of records) {
+    const block = element("span", "", track);
+    block.className = "other";
+    block.style.left = (100 * (Math.max(item.start, start) - start) / width) + "%";
+    block.style.width = (100 * (Math.min(item.end, end) - Math.max(item.start, start) + 1) / width) + "%";
+  }
+  const axis = element("div", "", section);
+  axis.className = "axis";
+  element("span", String(start), axis);
+  element("span", String(end), axis);
+}
+
+function sourceLink(parent, id) {
+  if (!/^[0-9a-f-]{36}$/i.test(id) || report.synthetic) {
+    parent.append(document.createTextNode(id));
+    return;
+  }
+  const link = element("a", id, parent);
+  link.href = "https://portal.gdc.cancer.gov/files/" + id;
+}
+
+function renderDetails() {
+  const target = document.querySelector("#details");
+  const selection = document.querySelector("#selection");
+  target.replaceChildren();
+  if (!selected.sample) {
+    selection.textContent = "No sample selected";
+    return;
+  }
+  const {gene, sample, track} = selected;
+  const row = report.records[gene][sample];
+  const [chromosome, start, end] = report.loci[gene];
+  selection.textContent = `${sample} · ${gene} · ${tracks[track]} · GRCh38 chr${chromosome}:${start}–${end}`;
+
+  const sequence = element("section", "", target);
+  element("h3", "Reported sequence calls", sequence);
+  element("p", row.variants.length
+    ? `${row.variants.length} distinct · ${row.protein_count} protein-altering or splice-site`
+    : "No reported call", sequence);
+  detailList(sequence, row.variants, (variant, item) => {
+    item.append(`${variant.chromosome}:${variant.start}–${variant.end} ${variant.ref} → ${variant.alt} · ${variant.consequences.join(", ")}`);
+    for (const file of variant.files) sourceLink(element("div", "MAF file ", item), file);
+  });
+
+  const gdc = element("section", "", target);
+  element("h3", "GDC copy number", gdc);
+  element("p", stateOf(row, "gdc") + (row.gdc.reason ? " · " + row.gdc.reason : ""), gdc);
+  if (row.gdc.uuid) element("p", "Sample UUID " + row.gdc.uuid, gdc);
+  if (row.gdc.file) sourceLink(element("p", "Segment file ", gdc), row.gdc.file);
+  locusTrack(gdc, start, end, row.gdc.segments);
+  detailList(gdc, row.gdc.segments, (segment, item) => {
+    item.textContent = `${segment.start}–${segment.end} · mean ${segment.mean}`;
+  });
+
+  const pgx = element("section", "", target);
+  element("h3", "Progenetix copy number", pgx);
+  element("p", row.pgx.reason, pgx);
+  if (row.pgx.biosample) element("p", "Biosample " + row.pgx.biosample, pgx);
+  locusTrack(pgx, start, end, row.pgx.intervals);
+  detailList(pgx, row.pgx.intervals, (interval, item) => {
+    item.textContent = `${interval.start}–${interval.end} · ${interval.state_id}`;
+  });
+}
+
+function renderSummary(samples) {
+  const body = document.querySelector("#summary tbody");
+  body.replaceChildren();
+  const ratio = (numerator, denominator) => denominator
+    ? `${numerator} / ${denominator} (${(100 * numerator / denominator).toFixed(1)}%)`
+    : "— (0 evaluable)";
+  for (const gene of genes) {
+    const counts = summarize(samples.map(sample => report.records[gene][sample]), Number(threshold.value));
+    const row = body.insertRow();
+    element("th", gene, row).scope = "row";
+    row.insertCell().textContent = ratio(counts.cooccurring, counts.evaluable);
+    for (const field of ["matchedCooccurring", "gdcLoss", "pgxLoss", "bothLoss", "unknown"]) {
+      row.insertCell().textContent = ratio(counts[field], counts.matched);
+    }
+  }
+}
+
+function renderView() {
+  const samples = shownSamples();
+  if (!samples.includes(selected.sample)) selected.sample = samples[0];
+  renderMatrix(samples);
+  renderDetails();
+  renderSummary(samples);
+}
+
+threshold.addEventListener("change", renderView);
+scope.addEventListener("change", () => {
+  page = 0;
+  renderView();
+});
+previous.addEventListener("click", () => renderMatrixAfterPaging(-1));
+next.addEventListener("click", () => renderMatrixAfterPaging(1));
+function renderMatrixAfterPaging(direction) {
+  page += direction;
+  renderMatrix(shownSamples());
+  if (previous.disabled) next.focus();
+  if (next.disabled) previous.focus();
+}
+renderView();
+</script>
+</body>
+</html>

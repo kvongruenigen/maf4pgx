@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1026" height="239" viewBox="0 0 1026.00 239" role="img" aria-labelledby="title desc">
+<title id="title">synthetic mutation oncoprint</title><desc id="desc">Rows are genes and columns are tumor samples. Colored cells indicate reported mutation consequences.</desc><rect width="100%" height="100%" fill="white"/><g font-family="system-ui, sans-serif" fill="#202531">
+<text x="24" y="34" font-size="24" font-weight="700">synthetic mutation oncoprint</text>
+<text x="24" y="59" font-size="13" font-weight="400">Top 2 genes by samples with a reported call · 8 samples represented in the export</text>
+<rect x="24" y="76" width="12" height="12" fill="#28618a"/>
+<text x="41" y="87" font-size="11" font-weight="400">Missense</text>
+<rect x="212" y="76" width="12" height="12" fill="#9b3675"/>
+<text x="229" y="87" font-size="11" font-weight="400">Stop gained</text>
+<rect x="400" y="76" width="12" height="12" fill="#b54f2c"/>
+<text x="417" y="87" font-size="11" font-weight="400">Stop lost</text>
+<rect x="588" y="76" width="12" height="12" fill="#574497"/>
+<text x="605" y="87" font-size="11" font-weight="400">Frameshift</text>
+<rect x="776" y="76" width="12" height="12" fill="#097570"/>
+<text x="793" y="87" font-size="11" font-weight="400">In-frame indel</text>
+<rect x="24" y="98" width="12" height="12" fill="#906013"/>
+<text x="41" y="109" font-size="11" font-weight="400">Splice site</text>
+<rect x="212" y="98" width="12" height="12" fill="#8397aa"/>
+<text x="229" y="109" font-size="11" font-weight="400">Synonymous</text>
+<rect x="400" y="98" width="12" height="12" fill="#5b6370"/>
+<text x="417" y="109" font-size="11" font-weight="400">Other</text>
+<rect x="588" y="98" width="12" height="12" fill="#202531"/>
+<text x="605" y="109" font-size="11" font-weight="400">Multiple consequence classes</text>
+<rect x="776" y="98" width="12" height="12" fill="#e7ecf0"/>
+<text x="793" y="109" font-size="11" font-weight="400">No reported call</text>
+<text x="912.0" y="126" font-size="11" font-weight="700">Samples (%)</text>
+<text x="24" y="148" font-size="12" font-weight="600">GENE_A</text>
+<text x="912.0" y="148" font-size="13" font-weight="400">4 (50.0%)</text>
+<rect x="120" y="134" width="780.00" height="18" fill="#e7ecf0"/>
+<rect x="120.00" y="134" width="97.10" height="18" fill="#28618a"><title>SYNTHETIC-02 | GENE_A | 1 distinct calls | Missense</title></rect>
+<rect x="217.50" y="134" width="97.10" height="18" fill="#28618a"><title>SYNTHETIC-01 | GENE_A | 1 distinct calls | Missense</title></rect>
+<rect x="315.00" y="134" width="97.10" height="18" fill="#9b3675"><title>SYNTHETIC-03 | GENE_A | 1 distinct calls | Stop gained</title></rect>
+<rect x="412.50" y="134" width="97.10" height="18" fill="#8397aa"><title>SYNTHETIC-04 | GENE_A | 1 distinct calls | Synonymous</title></rect>
+<text x="24" y="173" font-size="12" font-weight="600">GENE_B</text>
+<text x="912.0" y="173" font-size="13" font-weight="400">3 (37.5%)</text>
+<rect x="120" y="159" width="780.00" height="18" fill="#e7ecf0"/>
+<rect x="120.00" y="159" width="97.10" height="18" fill="#9b3675"><title>SYNTHETIC-02 | GENE_B | 1 distinct calls | Stop gained</title></rect>
+<rect x="510.00" y="159" width="97.10" height="18" fill="#28618a"><title>SYNTHETIC-05 | GENE_B | 1 distinct calls | Missense</title></rect>
+<rect x="607.50" y="159" width="97.10" height="18" fill="#906013"><title>SYNTHETIC-06 | GENE_B | 1 distinct calls | Splice site</title></rect>
+<text x="120" y="199" font-size="13" font-weight="400">Tumor samples</text>
+</g></svg>

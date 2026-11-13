@@ -1,0 +1,5 @@
+sample_barcode	sample_uuid	biosample_id	gdc_segment_file_id	sequence_calls	protein_or_splice_calls	progenetix_evidence	progenetix_overlapping_intervals	error
+SYNTHETIC-01	00000000-0000-4000-8000-000000000101	fictional-biosample-1	00000000-0000-4000-8000-000000000201	1	1	Copy loss	7661778-7687538:EFO:0030068	""
+SYNTHETIC-02	00000000-0000-4000-8000-000000000102	fictional-biosample-2	00000000-0000-4000-8000-000000000202	1	1	No spanning CNV reported		""
+SYNTHETIC-03	00000000-0000-4000-8000-000000000103	fictional-biosample-3	00000000-0000-4000-8000-000000000203	1	0	Copy loss	7661778-7687538:EFO:0030068	""
+SYNTHETIC-06	00000000-0000-4000-8000-000000000106	fictional-biosample-6	00000000-0000-4000-8000-000000000206	0	0	Query failed		Synthetic query failure
