@@ -5,7 +5,9 @@
 .DS_Store
 backup_mapped_variants.json
 *.svg
+!/examples/showcase/synthetic.oncoprint.svg
 *.pdf
 *.png
+!/examples/showcase/synthetic.copy-number.png
 .Rproj.user
 .Rhistory

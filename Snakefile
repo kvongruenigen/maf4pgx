@@ -11,6 +11,43 @@ rule import_file:
 		"data/varImport.tsv",
 		"data/varNew.tsv",
 
+# Compact public TCGA export, e.g. data/TCGA-COAD.variants.tsv.gz
+rule public_variants:
+	input:
+		"scripts/public_variants.py"
+	output:
+		"data/{project}.variants.tsv.gz"
+	wildcard_constraints:
+		project="TCGA-[A-Z0-9]+"
+	shell:
+		"python {input:q} {wildcards.project:q} --output {output:q}"
+
+rule public_oncoprint:
+	input:
+		variants="data/{project}.variants.tsv.gz",
+		script="scripts/oncoprint.py"
+	output:
+		"data/{project}.oncoprint.svg",
+		"data/{project}.gene_counts.tsv"
+	params:
+		prefix="data/{project}"
+	shell:
+		"python {input.script:q} {input.variants:q} --out-prefix {params.prefix:q}"
+
+rule public_mutation_summary:
+	input:
+		variants="data/{project}.variants.tsv.gz",
+		script="scripts/mutation_summary.py",
+		reader="scripts/oncoprint.py"
+	output:
+		"data/{project}.sample_calls.tsv",
+		"data/{project}.recurrent_variants.tsv",
+		"data/{project}.gene_pairs.tsv"
+	params:
+		prefix="data/{project}"
+	shell:
+		"python {input.script:q} {input.variants:q} --out-prefix {params.prefix:q}"
+
 # All files with annotations
 rule make_files:
 	input:

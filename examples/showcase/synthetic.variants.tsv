@@ -1,0 +1,11 @@
+gdc_file_id	sample_barcode	gene	assembly	chromosome	start	end	ref	alt	consequence	variant_type	tumor_barcode
+synthetic-file-01	SYNTHETIC-01	GENE_A	synthetic-build	chrSynthetic	100	100	A	G	Missense_Mutation	SNP	SYNTHETIC-01-aliquot
+synthetic-file-02	SYNTHETIC-01	GENE_A	synthetic-build	chrSynthetic	100	100	A	G	Missense_Mutation	SNP	SYNTHETIC-01-aliquot
+synthetic-file-01	SYNTHETIC-02	GENE_A	synthetic-build	chrSynthetic	100	100	A	G	Missense_Mutation	SNP	SYNTHETIC-02-aliquot
+synthetic-file-01	SYNTHETIC-03	GENE_A	synthetic-build	chrSynthetic	105	105	C	T	Nonsense_Mutation	SNP	SYNTHETIC-03-aliquot
+synthetic-file-01	SYNTHETIC-04	GENE_A	synthetic-build	chrSynthetic	110	110	T	C	Silent	SNP	SYNTHETIC-04-aliquot
+synthetic-file-01	SYNTHETIC-02	GENE_B	synthetic-build	chrSynthetic	200	200	G	T	Nonsense_Mutation	SNP	SYNTHETIC-02-aliquot
+synthetic-file-01	SYNTHETIC-05	GENE_B	synthetic-build	chrSynthetic	205	205	T	A	Missense_Mutation	SNP	SYNTHETIC-05-aliquot
+synthetic-file-01	SYNTHETIC-06	GENE_B	synthetic-build	chrSynthetic	210	210	A	C	Splice_Site	SNP	SYNTHETIC-06-aliquot
+synthetic-file-01	SYNTHETIC-07	GENE_C	synthetic-build	chrSynthetic	300	300	C	G	Missense_Mutation	SNP	SYNTHETIC-07-aliquot
+synthetic-file-01	SYNTHETIC-08	GENE_C	synthetic-build	chrSynthetic	305	305	G	A	Silent	SNP	SYNTHETIC-08-aliquot
